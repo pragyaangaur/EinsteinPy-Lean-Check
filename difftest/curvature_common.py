@@ -40,7 +40,7 @@ def exact(v, kappa=None):
     """Value at a point as an exact Rational. Floats come from einsteinpy itself (the
     ``1 / 2`` of ``EinsteinTensor`` and ``np.pi`` in the stress-energy tensor), so they are
     first divided by the known float factor and then matched to the nearest fraction with a
-    small denominator. A float that is not close to such a fraction raises ``Skip``."""
+    denominator below 10^5 (a spurious match would need a denominator above 10^6). A float that is not close to such a fraction raises ``Skip``."""
     v = sympy.sympify(v)
     if v.is_Rational:
         return v
@@ -48,8 +48,8 @@ def exact(v, kappa=None):
         v = v / kappa
     if v.is_Float or v.is_Number and v.is_finite:
         f = float(v)
-        r = Rational(fractions.Fraction(f).limit_denominator(10**6))
-        if abs(f - float(r)) <= 1e-11 * max(1.0, abs(f)):
+        r = Rational(fractions.Fraction(f).limit_denominator(10**5))
+        if abs(f - float(r)) <= 2e-13 * max(1.0, abs(f)):
             return r
         raise Skip("float not close to a small fraction")
     raise Skip(f"not a number at the point: {v}")

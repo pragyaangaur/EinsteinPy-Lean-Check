@@ -239,7 +239,7 @@ def pyIsLower (s : String) : Bool :=
   s.toList.any Char.isLower && !s.toList.any Char.isUpper
 
 /-- Substring test, Python `a in b`. -/
-def pyIn (a b : String) : Bool := (b.splitOn a).length > 1
+def pyIn (a b : String) : Bool := a.isEmpty || (b.splitOn a).length > 1
 
 /-- find.py:19-25 `find`: names containing the lowercased search string that are not all
 lowercase. ASCII only (`str.lower` and `String.toLower` differ on other scripts). -/

@@ -18,8 +18,9 @@ Three comparisons with Physlib, all over the reals.
 What is not stated here: Ricci flatness of Schwarzschild, Kerr and Bessel, `R_ab = Lambda g_ab`
 for de Sitter, and the Einstein-Maxwell equations for Kerr-Newman, Reissner-Nordstrom,
 Kerr-Newman-de Sitter and Ernst. Neither Mathlib nor Physlib has a Ricci tensor for a metric
-given by components, so those were checked numerically in einsteinpy at 40 digits (the
-scripts are `bugs/repro/predefined-*.py`) and are not Lean theorems.
+given by components, so those were checked numerically in einsteinpy at 40 digits and are not
+Lean theorems. The Curvature area is the place to restate them once it can compute Ricci
+tensors from a 2-jet.
 -/
 
 open Matrix minkowskiMatrix Cosmology Cosmology.FLRW.FriedmannEquation

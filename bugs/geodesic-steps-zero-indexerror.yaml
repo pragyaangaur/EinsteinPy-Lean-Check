@@ -4,8 +4,9 @@ area: Geodesic
 kind: wrong-error
 severity: low
 einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
-source: src/einsteinpy/geodesic/geodesic.py:261-270 (calculate_trajectory: vecs = np.array(geodint.results, dtype=float) and vecs[:, 0])
+source: "src/einsteinpy/geodesic/geodesic.py:261-270 (calculate_trajectory: vecs = np.array(geodint.results, dtype=float) and vecs[:, 0])"
 property: EinsteinpyLean.Geodesic.steps_zero_crashes
 summary: >
   `calculate_trajectory` documents its return value as an `N`-element step array and a shape `(N, 8)` array. With `steps=0` (or any negative number, for which `np.arange(N)` is empty) the loop does nothing, `geodint.results` is an empty list, `np.array([], dtype=float)` has shape `(0,)`, and `vecs[:, 0]` raises `IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed`. The construction of `Timelike`, `Nulllike` or `Geodesic` fails with that unrelated message; an empty trajectory (or a clear `ValueError` for a negative count) would be expected. The property `steps_zero_crashes` evaluates the model on `Geodesic("Schwarzschild", ...)` with `steps = 0`.
-upstream: RELATED, open pull request https://github.com/einsteinpy/einsteinpy/pull/673 rewrites the loop of `calculate_trajectory` (it slices `steps[: finished_step + 1]`) and does not mention an empty trajectory. No issue about `steps=0` was found.
+upstream: >
+  RELATED, open pull request https://github.com/einsteinpy/einsteinpy/pull/673 rewrites the loop of `calculate_trajectory` (it slices `steps[: finished_step + 1]`) and does not mention an empty trajectory. No issue about `steps=0` was found.

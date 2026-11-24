@@ -124,6 +124,97 @@ theorem einstein_trace (g ginv : Matrix ι ι ℝ) (hg : gᵀ = g) (hgi : g * gi
   rw [h1, h2, h3]
   ring
 
+/-- PROP curvature.weyl.traceless : PROVEN
+Source: textbook, the Weyl tensor is trace free, `g^{il} C_{iklm} = 0`, in every dimension
+`d ≥ 3`; weyl.py:83-98 builds it for `d > 3` (and returns zeros for `d = 3`). Here `R4` is any
+tensor, `Ric` its contraction `g^{il} R4_{iklm}` (which is the Ricci tensor of ricci.py:71 when
+`R4` is the Riemann tensor lowered with `g`) and `R` the scalar `g^{km} Ric_{km}`. The statement
+uses only that `ginv` is a symmetric inverse of the symmetric `g` and that `d ≠ 1, 2`. -/
+theorem weyl_traceless (g ginv : Matrix ι ι ℝ) (hg : gᵀ = g) (hgi' : ginvᵀ = ginv)
+    (hgi : g * ginv = 1) (R4 : ι → ι → ι → ι → ℝ) (Ric : ι → ι → ℝ) (R : ℝ)
+    (hRic : ∀ k m, Ric k m = ∑ i, ∑ l, ginv i l * R4 i k l m) (hR : R = scal ginv Ric)
+    (h1 : (Fintype.card ι : ℝ) ≠ 1) (h2 : (Fintype.card ι : ℝ) ≠ 2) (k m : ι) :
+    ∑ i, ∑ l, ginv i l * weyl g R4 Ric R i k l m = 0 := by
+  have hs : ∀ i j, g j i = g i j := fun i j => by simpa using congrFun (congrFun hg i) j
+  have hcomm : ginv * g = 1 := mul_eq_one_comm.mp hgi
+  have F1 : ∀ i k, ∑ l, ginv i l * g k l = if i = k then 1 else 0 := fun i k => by
+    have := congrFun (congrFun hcomm i) k
+    simp only [Matrix.mul_apply, Matrix.one_apply] at this
+    rw [← this]
+    exact sum_congr rfl fun l _ => by rw [hs]
+  have F2 : ∀ l m, ∑ i, ginv i l * g i m = if l = m then 1 else 0 := fun l m => by
+    have := congrFun (congrFun hcomm l) m
+    simp only [Matrix.mul_apply, Matrix.one_apply] at this
+    rw [← this]
+    exact sum_congr rfl fun i _ => by
+      have := congrFun (congrFun hgi' l) i
+      simp only [Matrix.transpose_apply] at this
+      rw [this]
+  have F3 : ∑ i, ∑ l, ginv i l * g i l = (Fintype.card ι : ℝ) := by
+    have := congrArg Matrix.trace hgi
+    simp only [Matrix.trace, Matrix.diag, Matrix.mul_apply, Matrix.one_apply_eq] at this
+    simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at this
+    rw [← this, sum_comm]
+    refine sum_congr rfl fun i _ => sum_congr rfl fun j _ => ?_
+    rw [mul_comm, hs]
+  have B1 : ∑ i, ∑ l, ginv i l * (Ric i m * g k l) = Ric k m := by
+    calc _ = ∑ i, Ric i m * (∑ l, ginv i l * g k l) := by
+          refine sum_congr rfl fun i _ => ?_
+          rw [mul_sum]
+          exact sum_congr rfl fun l _ => by ring
+      _ = ∑ i, Ric i m * (if i = k then 1 else 0) := by simp_rw [F1]
+      _ = Ric k m := by simp
+  have B2 : ∑ i, ∑ l, ginv i l * (Ric i l * g k m) = R * g k m := by
+    rw [hR]
+    simp only [scal]
+    rw [sum_mul]
+    refine sum_congr rfl fun i _ => ?_
+    rw [sum_mul]
+    exact sum_congr rfl fun l _ => by ring
+  have B3 : ∑ i, ∑ l, ginv i l * (Ric k l * g i m) = Ric k m := by
+    calc _ = ∑ l, Ric k l * (∑ i, ginv i l * g i m) := by
+          rw [sum_comm]
+          refine sum_congr rfl fun l _ => ?_
+          rw [mul_sum]
+          exact sum_congr rfl fun i _ => by ring
+      _ = ∑ l, Ric k l * (if l = m then 1 else 0) := by simp_rw [F2]
+      _ = Ric k m := by simp
+  have B4 : ∑ i, ∑ l, ginv i l * (Ric k m * g i l) = Ric k m * (Fintype.card ι : ℝ) := by
+    rw [← F3, mul_sum]
+    refine sum_congr rfl fun i _ => ?_
+    rw [mul_sum]
+    exact sum_congr rfl fun l _ => by ring
+  have C1 : ∑ i, ∑ l, ginv i l * (R * (g i l * g k m)) = R * g k m * (Fintype.card ι : ℝ) := by
+    rw [← F3, mul_sum]
+    refine sum_congr rfl fun i _ => ?_
+    rw [mul_sum]
+    exact sum_congr rfl fun l _ => by ring
+  have C2 : ∑ i, ∑ l, ginv i l * (R * (g i m * g k l)) = R * g k m := by
+    calc _ = ∑ i, R * g i m * (∑ l, ginv i l * g k l) := by
+          refine sum_congr rfl fun i _ => ?_
+          rw [mul_sum]
+          exact sum_congr rfl fun l _ => by ring
+      _ = ∑ i, R * g i m * (if i = k then 1 else 0) := by simp_rw [F1]
+      _ = R * g k m := by simp
+  have A : ∑ i, ∑ l, ginv i l * R4 i k l m = Ric k m := (hRic k m).symm
+  have expand : ∀ i l, ginv i l * weyl g R4 Ric R i k l m =
+      ginv i l * R4 i k l m +
+        (ginv i l * (Ric i m * g k l) - ginv i l * (Ric i l * g k m)
+          + ginv i l * (Ric k l * g i m) - ginv i l * (Ric k m * g i l)) *
+          ((Fintype.card ι : ℝ) - 2)⁻¹ +
+        (ginv i l * (R * (g i l * g k m)) - ginv i l * (R * (g i m * g k l))) *
+          (((Fintype.card ι : ℝ) - 1) * ((Fintype.card ι : ℝ) - 2))⁻¹ := by
+    intro i l
+    unfold weyl
+    ring
+  simp_rw [expand]
+  simp only [sum_add_distrib, sum_sub_distrib, ← sum_mul]
+  rw [A, B1, B2, B3, B4, C1, C2]
+  have h2' : (Fintype.card ι : ℝ) - 2 ≠ 0 := sub_ne_zero.mpr h2
+  have h1' : (Fintype.card ι : ℝ) - 1 ≠ 0 := sub_ne_zero.mpr h1
+  field_simp
+  ring
+
 /-- Flat space. For Physlib's Minkowski matrix `η` as the metric all derivatives vanish, and
 then the Christoffel symbols, the Riemann tensor, the Ricci tensor, the Ricci scalar and the
 Einstein tensor are zero. -/

@@ -1,0 +1,11 @@
+id: utils-dual-div-overflow
+title: DualNumber division raises OverflowError for large divisors
+area: Utils
+kind: crash
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/utils/dual.py:87-91
+property: EinsteinpyLean.Utils.div_self_not_total
+summary: >
+  `__truediv__` divides by `other.val ** 2`. Python's float power raises `OverflowError` when the result is out of range, so `DualNumber(1e200, 1) / DualNumber(1e200, 1)` fails, although the quotient is `1.0 + 0 ε`. Writing `other.val * other.val` would give `inf` and a derivative of `0`, and dividing by `other.val` twice would stay finite. Divisors above about 1.3e154 hit this, so a metric component of large magnitude raises an exception inside `_diff_g`.
+upstream: NEW, searched einsteinpy issues and PRs for "DualNumber", "dual number", "_jacobian_g", "dual.py" and "automatic differentiation" on 24 Nov 2026. Nothing reports it, and dual.py is unchanged on main since the Python 3.15 CI commit

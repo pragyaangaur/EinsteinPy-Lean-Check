@@ -10,12 +10,12 @@ open Py
 /-- `dual.new <scalar|dual> <scalar|dual>`: `DualNumber(a, b)`. A dual argument is a `TypeError`. -/
 def hNew : Handler
   | [a, b] =>
-    let conv (t : String) : Option (Except Exc Scalar) :=
+    let conv (t : String) : Option (Except Exc Float) :=
       match parseScalar t with
-      | some s => some (pure s)
+      | some s => some s.toFloat
       | none => (parseDual t).map fun _ => throw .typeError
     match conv a, conv b with
-    | some a, some b => renderDualR (do mk (← a) (← b))
+    | some a, some b => renderDualR (do let x ← a; let y ← b; pure ⟨x, y⟩)
     | _, _ => badInput
   | _ => badInput
 

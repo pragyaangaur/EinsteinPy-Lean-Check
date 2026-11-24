@@ -38,10 +38,10 @@ Build only your own targets. Other areas are being written at the same time and 
 
 ## The areas
 
-| Area | einsteinpy code (under `src/einsteinpy/`) |
+| Area | einsteinpy code (under `src/einsteinpy/`), all modelled |
 | --- | --- |
-| Tensor (done) | `symbolic/tensor.py` |
-| Helpers (done) | `symbolic/helpers.py` |
+| Tensor | `symbolic/tensor.py` |
+| Helpers | `symbolic/helpers.py` |
 | Curvature | `symbolic/metric.py`, `christoffel.py`, `riemann.py`, `ricci.py`, `einstein.py`, `weyl.py`, `schouten.py`, `stress_energy_momentum.py`, `vector.py` |
 | Predefined | `symbolic/predefined/*`, `symbolic/constants.py` |
 | Utils | `utils/dual.py`, `utils/scalar_factor.py`, `utils/exceptions.py`, `units.py`, `constant.py`, `bodies.py` |

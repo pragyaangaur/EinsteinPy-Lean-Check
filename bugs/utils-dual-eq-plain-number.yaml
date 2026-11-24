@@ -1,0 +1,11 @@
+id: utils-dual-eq-plain-number
+title: DualNumber == number raises AttributeError, and DualNumber is unhashable
+area: Utils
+kind: inconsistent
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/utils/dual.py:112-116
+property: EinsteinpyLean.Utils.eq_plain_number_not_boolean
+summary: >
+  `__eq__` reads `other.val` and `other.deriv` without checking the type, so `DualNumber(1, 0) == 1` and `DualNumber(1, 0) == None` raise `AttributeError` instead of answering `False` or `NotImplemented`. Defining `__eq__` without `__hash__` also makes the class unhashable, so a dual number cannot be a dict key or set member. The other operators accept plain numbers, so equality is the odd one out.
+upstream: NEW, searched einsteinpy issues and PRs for "DualNumber", "dual number", "_jacobian_g", "dual.py" and "automatic differentiation" on 24 Nov 2026. Nothing reports it, and dual.py is unchanged on main since the Python 3.15 CI commit

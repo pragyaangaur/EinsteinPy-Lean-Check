@@ -283,4 +283,112 @@ theorem atan2_eq_arctan {x y : ℝ} (hx : 0 < x) : atan2 y x = arctan (y / x) :=
   rw [← h2]
   exact (arctan_tan (by linarith [(abs_lt.1 h1).1]) (by linarith [(abs_lt.1 h1).2])).symm
 
+/-- PROP coordinates.cartesian_to_spherical.velocity_r : PROVEN
+Source: utils.py:25-44, `v_r = (x v_x + y v_y + z v_z) / sqrt n2` is the derivative of
+`r = sqrt (x² + y² + z²)` wherever `r ≠ 0`. -/
+theorem cart_to_sph_velocity_r {x y z : ℝ → ℝ} {vx vy vz t : ℝ}
+    (hx : HasDerivAt x vx t) (hy : HasDerivAt y vy t) (hz : HasDerivAt z vz t)
+    (h0 : x t ^ 2 + y t ^ 2 + z t ^ 2 ≠ 0) :
+    HasDerivAt (fun s => √(x s ^ 2 + y s ^ 2 + z s ^ 2))
+      ((x t * vx + y t * vy + z t * vz) / √(x t ^ 2 + y t ^ 2 + z t ^ 2)) t := by
+  have hs : √(x t ^ 2 + y t ^ 2 + z t ^ 2) ≠ 0 :=
+    (Real.sqrt_pos.2 (lt_of_le_of_ne (by positivity) (Ne.symm h0))).ne'
+  refine ((((hx.pow 2).add (hy.pow 2)).add (hz.pow 2)).sqrt h0).congr_deriv ?_
+  simp only [Pi.pow_apply, Pi.add_apply]
+  field_simp
+  ring
+
+/-- PROP coordinates.cartesian_to_spherical.velocity_theta : PROVEN
+Source: utils.py:25-44, `v_th = (z (x v_x + y v_y) - n1 v_z) / (n2 sqrt n1)` with `n1 = x² + y²` and
+`n2 = n1 + z²` is the derivative of `θ = arccos (z / r)`, which is `arctan2 (hypot x y, z)` off the origin
+(`bl_alpha_zero`), wherever the point is off the `z` axis (`n1 ≠ 0`). On the axis `θ` has a
+corner or `φ` is undefined, and the code divides by zero there, as it must. -/
+theorem cart_to_sph_velocity_theta {x y z : ℝ → ℝ} {vx vy vz t : ℝ}
+    (hx : HasDerivAt x vx t) (hy : HasDerivAt y vy t) (hz : HasDerivAt z vz t)
+    (h1 : 0 < x t ^ 2 + y t ^ 2) :
+    HasDerivAt (fun s => arccos (z s / √(x s ^ 2 + y s ^ 2 + z s ^ 2)))
+      ((z t * (x t * vx + y t * vy) - (x t ^ 2 + y t ^ 2) * vz) /
+        ((x t ^ 2 + y t ^ 2 + z t ^ 2) * √(x t ^ 2 + y t ^ 2))) t := by
+  have h2 : 0 < x t ^ 2 + y t ^ 2 + z t ^ 2 := by positivity
+  have hr := cart_to_sph_velocity_r hx hy hz h2.ne'
+  have hb : 0 < √(x t ^ 2 + y t ^ 2 + z t ^ 2) := Real.sqrt_pos.2 h2
+  have ha : 0 < √(x t ^ 2 + y t ^ 2) := Real.sqrt_pos.2 h1
+  have hb2 := Real.sq_sqrt h2.le
+  have ha2 := Real.sq_sqrt h1.le
+  have hq : (z t / √(x t ^ 2 + y t ^ 2 + z t ^ 2)) ^ 2 < 1 := by
+    rw [div_pow, hb2, div_lt_one h2]; nlinarith
+  have hn1 : z t / √(x t ^ 2 + y t ^ 2 + z t ^ 2) ≠ -1 := by
+    intro h; rw [h] at hq; norm_num at hq
+  have hn2 : z t / √(x t ^ 2 + y t ^ 2 + z t ^ 2) ≠ 1 := by
+    intro h; rw [h] at hq; norm_num at hq
+  have h := arccos_div_velocity hz hr hb.ne' hn1 hn2
+  refine h.congr_deriv ?_
+  have e : √(1 - (z t / √(x t ^ 2 + y t ^ 2 + z t ^ 2)) ^ 2)
+      = √(x t ^ 2 + y t ^ 2) / √(x t ^ 2 + y t ^ 2 + z t ^ 2) := by
+    rw [div_pow, hb2, ← Real.sqrt_div h1.le]
+    congr 1
+    field_simp
+    ring
+  rw [e]
+  field_simp
+  simp only [hb2]
+  ring
+
+/-- PROP coordinates.cartesian_to_bl.velocity_r : PROVEN
+Source: utils.py:49-62, `v_r = (1 / (2 r)) (dw/2 + (w dw + 4 α² z v_z) / (2 sqrt (w² + 4 α² z²)))`
+with `dw = 2 (x v_x + y v_y + z v_z)` is the derivative of the radius
+`r = sqrt (0.5 (w + sqrt (w² + 4 α² z²)))`, wherever the radius and the inner root are not zero. -/
+theorem cart_to_bl_velocity_r {α : ℝ} {x y z : ℝ → ℝ} {vx vy vz t : ℝ}
+    (hx : HasDerivAt x vx t) (hy : HasDerivAt y vy t) (hz : HasDerivAt z vz t)
+    (hR : 0 < blR α (x t) (y t) (z t) ) (hS : 0 < blS α (x t) (y t) (z t)) :
+    HasDerivAt (fun s => blR α (x s) (y s) (z s))
+      ((1 / (2 * blR α (x t) (y t) (z t))) *
+        ((2 * (x t * vx + y t * vy + z t * vz)) / 2
+          + (blW α (x t) (y t) (z t) * (2 * (x t * vx + y t * vy + z t * vz))
+              + 4 * α ^ 2 * z t * vz) / (2 * blS α (x t) (y t) (z t)))) t := by
+  have hw : HasDerivAt (fun s => blW α (x s) (y s) (z s)) (2 * (x t * vx + y t * vy + z t * vz)) t := by
+    refine ((((hx.pow 2).add (hy.pow 2)).add (hz.pow 2)).sub_const (α ^ 2)).congr_deriv ?_
+    ring
+  have hS' : HasDerivAt (fun s => blS α (x s) (y s) (z s))
+      ((2 * blW α (x t) (y t) (z t) * (2 * (x t * vx + y t * vy + z t * vz))
+        + 4 * α ^ 2 * (2 * z t * vz)) / (2 * blS α (x t) (y t) (z t))) t := by
+    have hin : blW α (x t) (y t) (z t) ^ 2 + 4 * α ^ 2 * z t ^ 2 ≠ 0 := by
+      intro h
+      have : blS α (x t) (y t) (z t) = 0 := by unfold blS; rw [h]; simp
+      linarith
+    refine (((hw.pow 2).add ((hz.pow 2).const_mul (4 * α ^ 2))).sqrt hin).congr_deriv ?_
+    simp only [Pi.pow_apply, Pi.add_apply]
+    unfold blS
+    ring
+  have hin2 : 1 / 2 * (blW α (x t) (y t) (z t) + blS α (x t) (y t) (z t)) ≠ 0 := by
+    intro h
+    have : blR α (x t) (y t) (z t) = 0 := by unfold blR; rw [h]; simp
+    linarith
+  refine ((hw.add hS').const_mul (1 / 2)).sqrt hin2 |>.congr_deriv ?_
+  simp only [Pi.add_apply]
+  have hR' : (0 : ℝ) < √(1 / 2 * (blW α (x t) (y t) (z t) + blS α (x t) (y t) (z t))) := hR
+  unfold blR
+  field_simp
+
+/-- PROP coordinates.cartesian_to_bl.velocity_theta : PROVEN
+Source: utils.py:49-62, `v_th = (-1 / sqrt (1 - (z / r)²)) ((v_z r - v_r z) / r²)` is the derivative of
+`θ = arccos (z / r)` for any curve `r` with derivative `v_r`, off the axis (`z / r ≠ ±1`). -/
+theorem cart_to_bl_velocity_theta {z R : ℝ → ℝ} {vz vr t : ℝ} (hz : HasDerivAt z vz t)
+    (hR : HasDerivAt R vr t) (h0 : R t ≠ 0) (h1 : z t / R t ≠ -1) (h2 : z t / R t ≠ 1) :
+    HasDerivAt (fun s => arccos (z s / R s))
+      ((-1 / √(1 - (z t / R t) ^ 2)) * ((vz * R t - vr * z t) / R t ^ 2)) t :=
+  arccos_div_velocity hz hR h0 h1 h2
+
+/-- PROP coordinates.cartesian_to_bl.velocity_phi : PROVEN
+Source: utils.py:49-62, `v_p = (1 / (1 + (y / x)²)) ((v_y x - v_x y) / x²)` is the derivative of
+`arctan (y / x)`, which is `φ` up to a constant on each side of the plane `x = 0`
+(`atan2_eq_arctan` for `x > 0`). It needs `x ≠ 0`, and the code divides by `x` there (`Props.bl_velocity_not_total_on_x0`),
+although `φ` is smooth on the whole plane off the axis: the equal expression `sph_vp_formula` is defined
+whenever `(x, y) ≠ (0, 0)`. -/
+theorem cart_to_bl_velocity_phi {x y : ℝ → ℝ} {vx vy t : ℝ} (hx : HasDerivAt x vx t)
+    (hy : HasDerivAt y vy t) (h0 : x t ≠ 0) :
+    HasDerivAt (fun s => arctan (y s / x s))
+      ((1 / (1 + (y t / x t) ^ 2)) * ((vy * x t - vx * y t) / x t ^ 2)) t :=
+  arctan_div_velocity hx hy h0
+
 end EinsteinpyLean.Coordinates.Spec

@@ -4,6 +4,8 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.InverseDeriv
 import Mathlib.Analysis.SpecialFunctions.Complex.Arg
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Tactic
+import Physlib.SpaceAndTime.Space.Basic
+import Physlib.SpaceAndTime.Space.Origin
 
 /-!
 # The coordinate conversions over the reals
@@ -15,8 +17,9 @@ The statements are the physics: round trips, the velocity formulas as derivative
 equation. Division by zero is `0` in Lean, so crashes of the code (Python's `ZeroDivisionError`) do not
 show up here. They are the subject of the model, in `Props.lean`.
 
-Physlib has no coordinate conversion, only the norm of `Space d` and integrals in spherical
-shells, so this file is plain Mathlib.
+Physlib has no coordinate conversion, so this file is mostly Mathlib. It uses Physlib's `Space 3` for
+the one fact that names the radius: `r` of `cartesian_to_spherical` is the distance of the point from the
+origin (`radius_is_dist`).
 -/
 
 open Real
@@ -151,6 +154,62 @@ theorem bl_roundtrip {α r θ φ : ℝ} (hr : 0 < r) (hθ : 0 < θ) (hθ' : θ <
   · have := atan2_polar (mul_pos hq hs) hφ
     unfold atan2 at this ⊢
     convert this using 3
+
+/-- PROP coordinates.boyer_lindquist.cartesian_roundtrip : PROVEN
+Source: `BoyerLindquist.to_cartesian` undoes `Cartesian.to_bl` (conversion.py). For every point with a
+positive radius `r` from utils.py:85, going to Boyer-Lindquist coordinates and back gives the point,
+including the axis and negative `z`. The points with `r = 0` are the disc of `Props.bl_disc_not_total`. -/
+theorem bl_cart_roundtrip {α x y z : ℝ} (hR : 0 < blR α x y z) :
+    blToCart α (cartToBL α x y z).1 (cartToBL α x y z).2.1 (cartToBL α x y z).2.2 = (x, y, z) := by
+  have hS : 0 ≤ blS α x y z := Real.sqrt_nonneg _
+  have hS2 : blS α x y z ^ 2 = blW α x y z ^ 2 + 4 * α ^ 2 * z ^ 2 := Real.sq_sqrt (by positivity)
+  have hws : 0 ≤ blW α x y z + blS α x y z := by
+    by_contra h
+    rw [not_le] at h
+    nlinarith [sq_nonneg (α * z)]
+  have hR2 : blR α x y z ^ 2 = (blW α x y z + blS α x y z) / 2 := by
+    unfold blR
+    rw [Real.sq_sqrt (by linarith)]
+    ring
+  have hq : blR α x y z ^ 2 * (blR α x y z ^ 2 - blW α x y z) = α ^ 2 * z ^ 2 := by
+    rw [hR2]
+    linear_combination (1 / 4) * hS2
+  have hid : (x ^ 2 + y ^ 2) * blR α x y z ^ 2
+      = (blR α x y z ^ 2 + α ^ 2) * (blR α x y z ^ 2 - z ^ 2) := by
+    have : x ^ 2 + y ^ 2 = blW α x y z - z ^ 2 + α ^ 2 := by unfold blW; ring
+    rw [this]
+    linear_combination (-1) * hq
+  have hRpos : 0 < blR α x y z ^ 2 := by positivity
+  have hz2 : z ^ 2 ≤ blR α x y z ^ 2 := by
+    by_contra h
+    rw [not_le] at h
+    nlinarith [sq_nonneg x, sq_nonneg y, mul_nonneg (add_nonneg (sq_nonneg x) (sq_nonneg y)) hRpos.le,
+      mul_pos (by positivity : 0 < blR α x y z ^ 2 + α ^ 2) (sub_pos.2 h)]
+  have hu : |z| ≤ blR α x y z := abs_le_of_sq_le_sq' hz2 hR.le |> fun h => abs_le.2 h
+  have hu1 : -1 ≤ z / blR α x y z := by rw [le_div_iff₀ hR]; linarith [(abs_le.1 hu).1]
+  have hu2 : z / blR α x y z ≤ 1 := by rw [div_le_iff₀ hR]; linarith [(abs_le.1 hu).2]
+  have hA : √(blR α x y z ^ 2 + α ^ 2) * √(1 - (z / blR α x y z) ^ 2)
+      = ‖(⟨x, y⟩ : ℂ)‖ := by
+    rw [← Real.sqrt_mul (by positivity), Complex.norm_def]
+    simp only [Complex.normSq_apply]
+    congr 1
+    field_simp
+    nlinarith [hid]
+  simp only [cartToBL, blToCart]
+  refine Prod.ext ?_ (Prod.ext ?_ ?_)
+  · rw [Real.sin_arccos]
+    show √(blR α x y z ^ 2 + α ^ 2) * √(1 - (z / blR α x y z) ^ 2) * cos (atan2 y x) = x
+    rw [hA]
+    unfold atan2
+    simp
+  · rw [Real.sin_arccos]
+    show √(blR α x y z ^ 2 + α ^ 2) * √(1 - (z / blR α x y z) ^ 2) * sin (atan2 y x) = y
+    rw [hA]
+    unfold atan2
+    simp
+  · show blR α x y z * cos (arccos (z / blR α x y z)) = z
+    rw [Real.cos_arccos hu1 hu2]
+    field_simp
 
 /-- PROP coordinates.boyer_lindquist.alpha_zero : PROVEN
 Source: for `α = 0` Boyer-Lindquist coordinates are spherical coordinates, so `cartesian_to_bl`
@@ -390,5 +449,15 @@ theorem cart_to_bl_velocity_phi {x y : ℝ → ℝ} {vx vy t : ℝ} (hx : HasDer
     HasDerivAt (fun s => arctan (y s / x s))
       ((1 / (1 + (y t / x t) ^ 2)) * ((vy * x t - vx * y t) / x t ^ 2)) t :=
   arctan_div_velocity hx hy h0
+
+/-- PROP coordinates.cartesian_to_spherical.radius_is_dist : PROVEN
+Source: utils.py:25-44 `r = np.hypot(np.hypot(x, y), z)`. In Physlib's `Space 3` it is the distance of the
+point `(x, y, z)` from the origin, whatever the signs of the coordinates. -/
+theorem radius_is_dist (p : Space 3) :
+    (cartToSph (p 0) (p 1) (p 2)).1 = dist p 0 := by
+  rw [Space.dist_eq, Fin.sum_univ_three]
+  simp only [cartToSph, hypot]
+  rw [Real.sq_sqrt (by positivity)]
+  simp
 
 end EinsteinpyLean.Coordinates.Spec

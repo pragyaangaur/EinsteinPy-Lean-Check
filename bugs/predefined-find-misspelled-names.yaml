@@ -1,0 +1,11 @@
+id: predefined-find-misspelled-names
+title: Two predefined functions are misspelled (ReissnerNordstorm, BarriolaVilekin), so find() does not find them by their real names
+area: Predefined
+kind: inconsistent
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/predefined/vacuum_solutions.py:118 and src/einsteinpy/symbolic/predefined/barriola_vilenkin.py:7, searched by find.py:19-25
+property: EinsteinpyLean.Predefined.Props.find_nordstrom
+summary: >
+  The functions are called ReissnerNordstorm (Reissner-Nordstrom has an m in Nordstrom) and BarriolaVilekin (the physicist is Vilenkin). find("nordstrom") and find("vilenkin") return empty lists, and only the misspelled searches succeed. Renaming would need aliases to keep old code working.
+upstream: NEW as a bug. The name was introduced by the closed PR https://github.com/einsteinpy/einsteinpy/pull/461 and no issue about the spelling was found.

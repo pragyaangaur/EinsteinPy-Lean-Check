@@ -1,0 +1,11 @@
+id: geodesic-shadow-no-rays
+title: Shadow drops every ray, because newton returns the turning point with a tiny imaginary part and np.isreal rejects it
+area: Geodesic
+kind: wrong-result
+severity: high
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/rays/shadow.py:28-31 (newton from 0.1 and the np.isreal test) and :46-51 (_root_equation with np.emath.sqrt)
+property: EinsteinpyLean.Geodesic.root_equation_not_real_at_start
+summary: >
+  `Shadow.__init__` solves `r / sqrt(1 - 2 M / r) = b` with `scipy.optimize.newton(self._root_equation, 0.1, args=(b,))` and keeps the ray only if `np.isreal(root)`. The start `0.1` is inside the horizon, where `1 - 2M/r < 0` and `np.emath.sqrt` returns a complex number, so the secant iteration runs in complex arithmetic. It converges to the right real turning point, but with an imaginary part of order 1e-17 to 1e-22, and `np.isreal` needs exactly `0`. In the pinned environment (scipy and numpy of the repository) `Shadow(mass=1 * u.kg, fov=30 * u.km, n_rays=20)` keeps 0 of the 20 rays, so `z`, `bfin`, `intensity` and `k1` are empty and the shadow plot has no data; the same for mass 10 kg. On other scipy versions the same start makes `newton` raise `RuntimeError: Failed to converge`, which is issue 663. A start outside the horizon (for example `r = 3 M`) or a tolerance `abs(root.imag) < 1e-9` avoids it. The property `root_equation_not_real_at_start` is the model statement that the root equation is complex at the starting point; `bugs/repro/geodesic-shadow-no-rays.py` shows the consequence, which is scipy's.
+upstream: RELATED, issue https://github.com/einsteinpy/einsteinpy/issues/663 (open, since 1 September 2024) reports that the same fixture (mass 1 kg, fov 30 km, 1000 rays) makes `newton` fail to converge on the Debian package. The silent empty result in the pinned environment is not described there. Closed issues 636 and 637 are also about newton failing in Shadow. shadow.py on main is byte for byte the pinned file.

@@ -100,10 +100,8 @@ def gen_case(rng):
         # identically singular
         X = sympy.zeros(d, d)
         if d > 1 and rng.random() < 0.5:
-            X[0, 0] = syms[0]
-            X[1, 1] = 1
-            X[0, 1] = X[1, 0] = syms[0]
-            X[1, 1] = syms[0] ** 2
+            # all entries equal: rank 1, so identically singular
+            X = sympy.ones(d, d) * syms[0]
         kind = "singular"
     elif r < 0.25 and d == 2:
         syms, X = generic_metric(rng, d)

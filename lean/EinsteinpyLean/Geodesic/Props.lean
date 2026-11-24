@@ -168,7 +168,7 @@ theorem sch_values :
   -- native_decide: evaluates the compiled model
   native_decide
 
-/-- PROP geodesic.metric.kerr_spin_zero : PROVEN
+/-- PROP geodesic.metric.kerr_spin_zero_float : PROVEN
 Source: geodesic/utils.py:145-179. Kerr with `a = 0` is Schwarzschild: at `(r, θ) = (4, π/2)` the two
 model functions give the same matrix, bit for bit. (Over the reals, for all points, see `Spec.lean`.) -/
 theorem kerr_a0_is_schwarzschild :

@@ -2,6 +2,8 @@ import Mathlib.Tactic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import PhyslibAlpha.Relativity.General.Schwarzschild.IncompressibleSphere
+import EinsteinpyLean.Geodesic.SpecIntegrator
+import EinsteinpyLean.Geodesic.SpecRays
 
 /-!
 # The geodesic metric functions and the momentum normaliser over the reals
@@ -17,7 +19,8 @@ Physlib has no geodesic integrator, no symplectic map and no Kerr metric. The on
 sphere, with `α = rs` the Schwarzschild radius): `schwarzschild_matches_physlib` shows that the code's
 `g^{tt}` and `g^{rr}` are `1 / gttOut` (with a minus sign) and `1 / grrOut` when `rs = 2`, which is `M = 1`.
 Division by zero is `0` in Lean, so the crashes of the code are not visible here; they are the subject of
-`Model.lean` and `Props.lean`.
+`Model.lean` and `Props.lean`. The integrators are in `SpecIntegrator.lean` and the shadow and the embedding in
+`SpecRays.lean`; this file imports both, so the target `EinsteinpyLean.Geodesic.Spec` builds all of the Spec layer.
 -/
 
 open Real

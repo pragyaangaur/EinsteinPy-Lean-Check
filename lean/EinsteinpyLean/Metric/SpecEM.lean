@@ -71,6 +71,7 @@ theorem field_is_dA (rQ al r th : ℝ) (hs : sig r th al ≠ 0) :
     refine this.congr_deriv ?_
     simp only [f13, id, Pi.neg_apply]
     field_simp
+    ring
   · have h3 : HasDerivAt (fun th => sin th ^ 2) (2 * sin th * cos th) th := by
       have := (hasDerivAt_sin th).pow 2
       refine this.congr_deriv ?_

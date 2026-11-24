@@ -248,6 +248,18 @@ theorem root_equation_truncates_mass :
   -- native_decide: evaluates the compiled model
   native_decide
 
+/-- PROP geodesic.shadow.root_equation_real_at_start : REFUTED
+Source: rays/shadow.py:28-31. `newton(self._root_equation, 0.1, args=(b,))` starts at `r = 0.1`, inside the
+horizon, where `1 - 2 M / r < 0`, and `np.emath.sqrt` returns a complex number. The root equation is complex
+at the start (`M = 1`, `b = 6`), the secant iteration runs in complex arithmetic and ends with a root that has a
+tiny imaginary part, which `np.isreal(root)` rejects: no ray is kept (`bugs/geodesic-shadow-no-rays.yaml`). -/
+theorem root_equation_not_real_at_start :
+    (match rootEq 1.0 0.1 6.0 with
+     | .ok (.re _) => true
+     | _ => false) = false := by
+  -- native_decide: evaluates the compiled model
+  native_decide
+
 /-! ## The embedding -/
 
 /-- The slope `dz/dr` of an embedding of the optical geometry `dr² / f² + r² dφ² / f` in Euclidean space,

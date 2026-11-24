@@ -1,0 +1,11 @@
+id: utils-dual-pow-zero-at-zero
+title: DualNumber ** 0 raises ZeroDivisionError at value 0
+area: Utils
+kind: crash
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/utils/dual.py:118-119
+property: EinsteinpyLean.Utils.pow_zero_not_total
+summary: >
+  `DualNumber.__pow__` returns `DualNumber(val ** power, deriv * power * val ** (power - 1))`. For `power = 0` and `val = 0` the second term evaluates `0.0 ** -1`, which Python rejects with `ZeroDivisionError`, although `x ** 0` is the constant `1` with derivative `0`. The same happens for any `power` below one when `val` is zero, where the derivative is infinite, but for `power = 0` the true answer is finite and the multiplication by `power = 0` would have hidden the term. The model shows `powS ⟨0, 1⟩ (.int 0)` is an error.
+upstream: NEW, searched einsteinpy issues and PRs for "DualNumber", "dual number", "_jacobian_g", "dual.py" and "automatic differentiation" on 24 Nov 2026. Nothing reports it, and dual.py is unchanged on main since the Python 3.15 CI commit

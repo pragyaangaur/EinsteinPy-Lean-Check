@@ -1,0 +1,11 @@
+id: coordinates-velocity-meaning-and-units
+title: velocity(metric) returns dt/dtau tagged as a speed, and treats the 3-velocity arguments as derivatives by proper time
+area: Coordinates
+kind: docs-mismatch
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/coordinates/differential.py:131-135 and utils.py:232-264 (`v0`)
+property: EinsteinpyLean.Coordinates.rest_v_t_is_not_a_speed
+summary: >
+  `v0` solves `g_mu_nu u^mu u^nu = c**2` for the time component `u^0` with the metric as given, and `velocity(metric)` stores it as `v_t * u.m / u.s`. With a metric whose `g_tt` carries `c**2`, such as Schwarzschild, `u^0 = dt/dtau` is a pure number: a particle at rest at `r = 5 r_s` gets `v_t = 1.118` with the unit `m / s`. The same function gives `c` for `diag(1, -1, -1, -1)`. The docstrings call `v_r`, `v_th` and `v_p` 3-velocities, but `v0` uses them as `dx^i/dtau`, so passing `dx^i/dt` gives a wrong `v_t`. The algebra of `v0` is right (`Spec.v0_normalised`, proved over the reals).
+upstream: KNOWN-OPEN, issue https://github.com/einsteinpy/einsteinpy/issues/528 (open). The issue text is about angular against linear velocity, which main has fixed through the full metric. The author's own comment on it names the two remaining points, the unit of v_t and the 3-velocity wording, and has no fix yet.

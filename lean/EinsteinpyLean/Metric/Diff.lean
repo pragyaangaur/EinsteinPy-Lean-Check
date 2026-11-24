@@ -159,20 +159,6 @@ def hEm (op : String) : Handler
 def renderTriples (l : List (Nat × Nat × Nat)) : String :=
   "L:" ++ ";".intercalate (l.map fun (i, j, k) => s!"{i},{j},{k}")
 
-/-- Units, as far as `u.quantity_input` cares: the dimension class of a unit name. -/
-inductive UDim where
-  | mass | time | charge | dimless | angle | chargePerMass
-  deriving BEq
-
-def unitDim : String → Option UDim
-  | "kg" | "g" | "Msun" => some .mass
-  | "s" => some .time
-  | "C" | "mC" => some .charge
-  | "one" | "percent" => some .dimless
-  | "rad" => some .angle
-  | "Ckg" | "mCkg" => some .chargePerMass
-  | _ => none
-
 /-- A constructor argument `plain=<hex>` (no unit) or `<unit>=<hex>`. -/
 def parseSpec (s : String) : Option (Option UDim × Float) :=
   match s.splitOn "=" with
@@ -181,29 +167,13 @@ def parseSpec (s : String) : Option (Option UDim × Float) :=
       if u == "plain" then some (none, x) else some ((← unitDim u), x)
   | _ => none
 
-/-- `u.quantity_input` accepts a plain number when the target unit is dimensionless, and raises `TypeError`
-otherwise. -/
-def checkSpec (s : Option UDim × Float) (want : UDim) : R Float :=
-  match s.1 with
-  | none => if want == .dimless then pure s.2 else throw .type
-  | some d => if d == want then pure s.2 else throw .units
-
 /-- `m.ctor <cls> <Mspec> <aspec> <Qspec> <qspec>`: the `u.quantity_input` check of `__init__`, in signature order,
 and then `sch_rad` from the raw `.value` of the mass. The decorator checks units but does not convert. -/
 def hCtor : Handler
   | [cls, ms, as, qs, qq] =>
     match parseCls cls, parseSpec ms, parseSpec as, parseSpec qs, parseSpec qq with
     | some cls, some ms, some as, some qs, some qq =>
-      let res : R Float := do
-        let M ← checkSpec ms .mass
-        match cls with
-        | .schw => pure (schRad M)
-        | .kerr => do let _ ← checkSpec as .dimless; pure (schRad M)
-        | .kn => do
-            let _ ← checkSpec as .dimless
-            let _ ← checkSpec qs .charge
-            let _ ← checkSpec qq .chargePerMass
-            pure (schRad M)
+      let res : R Float := ctorRad cls ms as qs qq
       renderF res
     | _, _, _, _, _ => badInput
   | _ => badInput

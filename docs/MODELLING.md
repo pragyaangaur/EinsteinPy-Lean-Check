@@ -23,7 +23,33 @@ The two layers meet in the difftest. The model is checked against einsteinpy cas
 - `difftest/foo_<topic>_diff.py`, one per handler group, built on `difftest/harness.py`.
 - `bugs/foo-<slug>.yaml` and `bugs/repro/foo-<slug>.py`, one pair per bug record.
 
-Wire the area in by adding its `Diff.handlers` to `allHandlers` in `lean/Main.lean` and its modules to `lean/EinsteinpyLean.lean`.
+Each area also has `lean/exe/Foo.lean`, the root of its own executable `epdiff_foo`, which `lean/lakefile.toml` already declares. Copy `lean/exe/Tensor.lean` and change the two names. Difftests call `run(gen, exe="epdiff_foo")`.
+
+Do not edit `lean/Main.lean`, `lean/EinsteinpyLean.lean`, `lean/lakefile.toml`, anything in `lean/EinsteinpyLean/Common/`, `difftest/harness.py` or another area's files. The maintainer wires finished areas into `epdiff` and the library root. If you need a shared helper, put a copy in your own area directory.
+
+## Building
+
+```sh
+cd lean
+lake build EinsteinpyLean.Foo.Model EinsteinpyLean.Foo.Props EinsteinpyLean.Foo.Spec epdiff_foo
+```
+
+Build only your own targets. Other areas are being written at the same time and may not compile yet. Plain `lake build` builds only the wired-in areas.
+
+## The areas
+
+| Area | einsteinpy code (under `src/einsteinpy/`) |
+| --- | --- |
+| Tensor (done) | `symbolic/tensor.py` |
+| Helpers (done) | `symbolic/helpers.py` |
+| Curvature | `symbolic/metric.py`, `christoffel.py`, `riemann.py`, `ricci.py`, `einstein.py`, `weyl.py`, `schouten.py`, `stress_energy_momentum.py`, `vector.py` |
+| Predefined | `symbolic/predefined/*`, `symbolic/constants.py` |
+| Utils | `utils/dual.py`, `utils/scalar_factor.py`, `utils/exceptions.py`, `units.py`, `constant.py`, `bodies.py` |
+| Coordinates | `coordinates/conversion.py`, `core.py`, `differential.py`, `utils.py` |
+| Metric | `metric/base_metric.py`, `schwarzschild.py`, `kerr.py`, `kerrnewman.py` |
+| Geodesic | `geodesic/geodesic.py`, `geodesic/utils.py`, `integrators/*`, `rays/shadow.py`, `hypersurface/schwarzschildembedding.py` |
+
+`plotting/` and `examples.py` are out of scope.
 
 ## Step 1: mirror the source
 
@@ -73,6 +99,6 @@ cd lean && lake build && cd ..
 
 ## Rules
 
-- Commit one file per commit with `scripts/commit_file.sh <path> "<message>"`.
+- Commit one file per commit with `scripts/commit_file.sh <path> "<message>"`. It also pushes. Commit work in progress too, and fix mistakes with new commits, never by rewriting history. Commit messages are plain English, with a scope such as `curvature:`, and never mention AI tools.
 - Keep the laptop safe: 16 GB of RAM. Never build all of Physlib or Mathlib from source, and keep sympy cases small (dimension at most 4, rank at most 4).
 - Nothing goes to einsteinpy or Physlib from this repository automatically. Physlib's AI policy requires a human to vouch for every line and to do all review communication.

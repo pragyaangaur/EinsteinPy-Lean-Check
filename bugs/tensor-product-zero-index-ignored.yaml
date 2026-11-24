@@ -1,0 +1,11 @@
+id: tensor-product-zero-index-ignored
+title: tensor_product(t1, t2, i=0) skips the contraction silently because 0 is falsy, and i=1 with j omitted raises TypeError
+area: Tensor
+kind: inconsistent
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/tensor.py:93
+property: EinsteinpyLean.Tensor.tensorProduct_i0_jNone_not_contracted
+summary: >
+  The guard is `if (i or j) is None`. When exactly one of `i` and `j` is given, the outcome depends on whether that index is zero. `tensor_product(v, w, 0)` evaluates `(0 or None)` to `None` and returns the plain outer product with config `ul`, without contracting and without an error. `tensor_product(m, w, 1)` evaluates `(1 or None)` to `1` and then crashes on `tensor2.config[None]` with "TypeError: string indices must be integers, not 'NoneType'". `tensor_product(v, w, None, 0)` crashes the same way. The docstring says only that `i` and `j` are optional. The intended guard is most likely `if i is None and j is None`, with a clear ValueError when only one is given.
+upstream: NEW, searched einsteinpy issues and PRs for "tensor_product" on 24 Nov 2026, nothing found

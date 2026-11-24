@@ -181,9 +181,11 @@ def parseSpec (s : String) : Option (Option UDim × Float) :=
       if u == "plain" then some (none, x) else some ((← unitDim u), x)
   | _ => none
 
+/-- `u.quantity_input` accepts a plain number when the target unit is dimensionless, and raises `TypeError`
+otherwise. -/
 def checkSpec (s : Option UDim × Float) (want : UDim) : R Float :=
   match s.1 with
-  | none => throw .type
+  | none => if want == .dimless then pure s.2 else throw .type
   | some d => if d == want then pure s.2 else throw .units
 
 /-- `m.ctor <cls> <Mspec> <aspec> <Qspec> <qspec>`: the `u.quantity_input` check of `__init__`, in signature order,

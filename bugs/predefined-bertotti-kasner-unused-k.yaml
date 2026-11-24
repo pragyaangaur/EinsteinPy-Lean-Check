@@ -1,0 +1,11 @@
+id: predefined-bertotti-kasner-unused-k
+title: BertottiKasner has an undocumented unused parameter k in front of lambd, so a positional call sets the wrong parameter
+area: Predefined
+kind: docs-mismatch
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/predefined/bertotti_kasner.py:7-29
+property: EinsteinpyLean.Predefined.Props.bk_docstring_mismatch
+summary: >
+  The signature is BertottiKasner(c, k, lambd). The docstring documents only c and lambd, and no line of the body reads k. A call such as BertottiKasner(c, 2), written from the docstring, silently stores the 2 in k and leaves the cosmological constant as the symbol l. The Lean model has no k because the formula never uses it.
+upstream: NEW, no issue or pull request found (searched BertottiKasner).

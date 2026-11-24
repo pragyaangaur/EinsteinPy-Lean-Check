@@ -1,0 +1,11 @@
+id: curvature-stress-energy-change-config-class
+title: StressEnergyMomentumTensor.change_config returns an EinsteinTensor
+area: Curvature
+kind: inconsistent
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/stress_energy_momentum.py:95
+property: EinsteinpyLean.Curvature.stress_change_config_wrong_class
+summary: >
+  `StressEnergyMomentumTensor.change_config` documents that it returns a `StressEnergyMomentumTensor`, but it builds the result with `EinsteinTensor(...)`. Every other class returns its own class from `change_config` and from `lorentz_transform`, and `StressEnergyMomentumTensor.lorentz_transform` returns the right class. The numbers are correct. The returned object has the wrong type, so `isinstance` checks and the `from_metric` of the stress-energy class are lost after the first configuration change. The difftest `difftest/curvature_construct_diff.py` checks the class name of every `change_config` result against the Lean model, which encodes this behaviour in `Kind.changeClass`.
+upstream: NEW, no matching issue or pull request in a search of einsteinpy/einsteinpy on 24 November 2026. The same line is unchanged on main.

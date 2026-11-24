@@ -22,7 +22,7 @@ The FANTASY integrator mixes three kinds of arithmetic. The model copies each on
   BLAS (Apple Accelerate on the pinned machine), where a dot product of four numbers is
   `(a0 b0 + a2 b2) + (a1 b1 + a3 b3)` and each matrix row is the same dot product (`dotBlas`). The metric
   array `g(q)` has dtype `object`, so every product with it, and every product with an `object` vector, is
-  done in Python, summing from the integer `0` in order (`dotObj`). A `Vec` carries the dtype flag `obj`.
+  done in Python, summing the products in order (`dotObj`). A `Vec` carries the dtype flag `obj`.
   Only the very first `_flow_A` of a run sees `float64` vectors, because every flow result is an `object`
   array.
 * The scheme is composed from `_ord_2` with Yoshida triple jumps. `_ord_4`, `_ord_6` and `_ord_8` all read
@@ -250,9 +250,11 @@ def Vec.get (v : Vec) (i : Nat) : Float := v.d[i]!
 def dotBlas (a b : Array Float) : Float :=
   (a[0]! * b[0]! + a[2]! * b[2]!) + (a[1]! * b[1]! + a[3]! * b[3]!)
 
-/-- A Python level dot product of four numbers: the sum starts from the integer `0`. -/
+/-- A Python level dot product of four numbers (`OBJECT_dot` of NumPy): the sum of the products from left
+to right, starting from the first product (not from an integer zero, which would turn `-0.0` into `0.0`;
+the difftest found this with an all negative zero row). -/
 def dotObj (a b : Array Float) : Float :=
-  (((0.0 + a[0]! * b[0]!) + a[1]! * b[1]!) + a[2]! * b[2]!) + a[3]! * b[3]!
+  ((a[0]! * b[0]! + a[1]! * b[1]!) + a[2]! * b[2]!) + a[3]! * b[3]!
 
 /-- Row `i` of a row-major 4 x 4 array. -/
 def row4 (m : Array Float) (i : Nat) : Array Float := #[m[4 * i]!, m[4 * i + 1]!, m[4 * i + 2]!, m[4 * i + 3]!]

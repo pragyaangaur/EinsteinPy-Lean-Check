@@ -1,0 +1,11 @@
+id: coordinates-bl-velocity-x0
+title: the Boyer-Lindquist velocity conversion raises ZeroDivisionError on the whole plane x = 0
+area: Coordinates
+kind: crash
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/coordinates/utils.py:49-62 (`v_p = (1 / (1 + np.square(y / x))) * ((v_y * x - v_x * y) / (x**2))`)
+property: EinsteinpyLean.Coordinates.bl_velocity_not_total_on_x0
+summary: >
+  `phi = arctan2(y, x)` is fine for every point off the z axis, and the position conversion of `(0, 2, 1)` works. The velocity of the same point goes through `y / x` and `x**2` and raises `ZeroDivisionError`, also for `|x| < 1e-162`, where `x**2` underflows to zero. Any trajectory that starts on or crosses the y-z plane cannot be converted with `bl_differential` or `CartesianDifferential.convert_bl`. The equivalent expression `(v_y * x - v_x * y) / (x**2 + y**2)` is defined for all `(x, y) != (0, 0)`, and it is what `cartesian_to_spherical` uses.
+upstream: NEW, searched einsteinpy issues and pull requests for "cartesian_to_bl", "bl_differential", "convert_bl", "ZeroDivisionError coordinates" and "v_p" on 24 Nov 2026. Nothing reports it.

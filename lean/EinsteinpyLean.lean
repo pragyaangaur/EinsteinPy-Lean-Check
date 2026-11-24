@@ -42,3 +42,7 @@ import EinsteinpyLean.Geodesic.Props
 import EinsteinpyLean.Geodesic.Spec
 import EinsteinpyLean.Geodesic.SpecIntegrator
 import EinsteinpyLean.Geodesic.SpecRays
+import EinsteinpyLean.Curvature.Diff
+import EinsteinpyLean.Curvature.Model
+import EinsteinpyLean.Curvature.Props
+import EinsteinpyLean.Curvature.Spec

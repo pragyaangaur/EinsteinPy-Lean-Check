@@ -1,0 +1,11 @@
+id: metric-singularities-message-space
+title: The CoordinateError messages of singularities lack a space between two string literals
+area: Metric
+kind: docs-mismatch
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/metric/base_metric.py:303-306 and 311-314
+property: EinsteinpyLean.Metric.singularities_message_has_no_space
+summary: >
+  The message is written as `"... are only available in" "Boyer-Lindquist Coordinates."`, two adjacent string literals, and Python joins them without a space. The user reads `Singularities for Kerr solutions are only available inBoyer-Lindquist Coordinates.` and `... are only available inSpherical Polar Coordinates.`
+upstream: NEW, searched einsteinpy issues and PRs for "singularities" and "CoordinateError message" on 24 Nov 2026. Nothing reports it. Main is still at 63e1c54

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 404" width="980" height="404" role="img" aria-label="Bug records by area, split by whether einsteinpy already knew about them">
+<rect width="980" height="404" rx="12" fill="#1a1a19"/>
+<text x="24" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#f0efec">33 bug records by area, and whether einsteinpy already knew</text>
+<rect x="24" y="50" width="12" height="12" rx="3" fill="#3987e5"/>
+<text x="42" y="60.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#c3c2b7">New (24)</text>
+<rect x="110.8" y="50" width="12" height="12" rx="3" fill="#d95926"/>
+<text x="128.8" y="60.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#c3c2b7">Related (3)</text>
+<rect x="218.89999999999998" y="50" width="12" height="12" rx="3" fill="#199e70"/>
+<text x="236.89999999999998" y="60.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#c3c2b7">Known, open (4)</text>
+<rect x="355.4" y="50" width="12" height="12" rx="3" fill="#c98500"/>
+<text x="373.4" y="60.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#c3c2b7">Known, closed (2)</text>
+<line x1="120.0" y1="84" x2="120.0" y2="356" stroke="#33322f" stroke-width="1"/>
+<text x="120.0" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c3c2b7">0</text>
+<line x1="253.33333333333334" y1="84" x2="253.33333333333334" y2="356" stroke="#33322f" stroke-width="1"/>
+<text x="253.33333333333334" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c3c2b7">1</text>
+<line x1="386.6666666666667" y1="84" x2="386.6666666666667" y2="356" stroke="#33322f" stroke-width="1"/>
+<text x="386.6666666666667" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c3c2b7">2</text>
+<line x1="520.0" y1="84" x2="520.0" y2="356" stroke="#33322f" stroke-width="1"/>
+<text x="520.0" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c3c2b7">3</text>
+<line x1="653.3333333333334" y1="84" x2="653.3333333333334" y2="356" stroke="#33322f" stroke-width="1"/>
+<text x="653.3333333333334" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c3c2b7">4</text>
+<line x1="786.6666666666667" y1="84" x2="786.6666666666667" y2="356" stroke="#33322f" stroke-width="1"/>
+<text x="786.6666666666667" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c3c2b7">5</text>
+<line x1="920.0" y1="84" x2="920.0" y2="356" stroke="#33322f" stroke-width="1"/>
+<text x="920.0" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c3c2b7">6</text>
+<text x="108" y="106.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Coordinates</text>
+<rect x="120" y="92" width="531.3333333333334" height="20" rx="4" fill="#3987e5"><title>Coordinates: 4 new</title></rect>
+<text x="385.6666666666667" y="106.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">4</text>
+<rect x="653.3333333333334" y="92" width="131.33333333333334" height="20" rx="4" fill="#199e70"><title>Coordinates: 1 known, open</title></rect>
+<text x="719.0" y="106.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<rect x="786.6666666666667" y="92" width="131.33333333333334" height="20" rx="4" fill="#c98500"><title>Coordinates: 1 known, closed</title></rect>
+<text x="852.3333333333334" y="106.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<text x="926.0000000000001" y="106.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">6</text>
+<text x="108" y="140.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Geodesic</text>
+<rect x="120" y="126" width="398.0" height="20" rx="4" fill="#3987e5"><title>Geodesic: 3 new</title></rect>
+<text x="319.0" y="140.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">3</text>
+<rect x="520.0" y="126" width="264.6666666666667" height="20" rx="4" fill="#d95926"><title>Geodesic: 2 related</title></rect>
+<text x="652.3333333333334" y="140.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">2</text>
+<rect x="786.6666666666667" y="126" width="131.33333333333334" height="20" rx="4" fill="#199e70"><title>Geodesic: 1 known, open</title></rect>
+<text x="852.3333333333334" y="140.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<text x="926.0000000000001" y="140.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">6</text>
+<text x="108" y="174.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Predefined</text>
+<rect x="120" y="160" width="664.6666666666667" height="20" rx="4" fill="#3987e5"><title>Predefined: 5 new</title></rect>
+<text x="452.33333333333337" y="174.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">5</text>
+<rect x="786.6666666666667" y="160" width="131.33333333333334" height="20" rx="4" fill="#199e70"><title>Predefined: 1 known, open</title></rect>
+<text x="852.3333333333334" y="174.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<text x="926.0000000000001" y="174.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">6</text>
+<text x="108" y="208.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Utils</text>
+<rect x="120" y="194" width="664.6666666666667" height="20" rx="4" fill="#3987e5"><title>Utils: 5 new</title></rect>
+<text x="452.33333333333337" y="208.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">5</text>
+<text x="792.6666666666667" y="208.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">5</text>
+<text x="108" y="242.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Metric</text>
+<rect x="120" y="228" width="398.0" height="20" rx="4" fill="#3987e5"><title>Metric: 3 new</title></rect>
+<text x="319.0" y="242.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">3</text>
+<rect x="520.0" y="228" width="131.33333333333334" height="20" rx="4" fill="#d95926"><title>Metric: 1 related</title></rect>
+<text x="585.6666666666666" y="242.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<text x="659.3333333333334" y="242.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">4</text>
+<text x="108" y="276.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Tensor</text>
+<rect x="120" y="262" width="264.6666666666667" height="20" rx="4" fill="#3987e5"><title>Tensor: 2 new</title></rect>
+<text x="252.33333333333334" y="276.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">2</text>
+<rect x="386.6666666666667" y="262" width="131.33333333333334" height="20" rx="4" fill="#199e70"><title>Tensor: 1 known, open</title></rect>
+<text x="452.33333333333337" y="276.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<text x="526.0" y="276.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">3</text>
+<text x="108" y="310.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Curvature</text>
+<rect x="120" y="296" width="131.33333333333334" height="20" rx="4" fill="#3987e5"><title>Curvature: 1 new</title></rect>
+<text x="185.66666666666669" y="310.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<rect x="253.33333333333334" y="296" width="131.33333333333334" height="20" rx="4" fill="#c98500"><title>Curvature: 1 known, closed</title></rect>
+<text x="319.0" y="310.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<text x="392.6666666666667" y="310.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">2</text>
+<text x="108" y="344.5" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#f0efec">Helpers</text>
+<rect x="120" y="330" width="131.33333333333334" height="20" rx="4" fill="#3987e5"><title>Helpers: 1 new</title></rect>
+<text x="185.66666666666669" y="344.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">1</text>
+<text x="259.33333333333337" y="344.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#c3c2b7">1</text>
+</svg>

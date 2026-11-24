@@ -94,6 +94,23 @@ theorem kerr_christoffel_symmetric_at_sample :
   -- native_decide: evaluates the compiled model
   native_decide
 
+/-- A concrete evaluation behind `Spec.kerr_dg_phiphi_not_derivative`, with no `PROP` line of its own. At `M = 1e30 kg`,
+`a = 0.99`, `r = 2000 m`, `th = 1`, the model's `dgdx[1, 3, 3]` of Kerr differs by more than one percent (about five) from a central
+difference of the model's own `g_{phi phi}`. For Kerr-Newman the same entry agrees to 1e-6. -/
+theorem kerr_dg_phiphi_differs_from_difference_quotient :
+    (let h := 1.0e-3
+     let r := 2000.0
+     let diff (g : Float → R Arr) : Float :=
+       match g (r + h), g (r - h) with
+       | .ok a, .ok b => (a.at2 3 3 - b.at2 3 3) / (2.0 * h)
+       | _, _ => 0.0 / 0.0
+     let kerrD := match kerrDg 1.0e30 0.99 r 1.0 with | .ok d => d.at3 1 3 3 | .error _ => 0.0 / 0.0
+     let knD := match knDg 1.0e30 0.99 1.0e18 r 1.0 with | .ok d => d.at3 1 3 3 | .error _ => 0.0 / 0.0
+     !relClose kerrD (diff (fun r => kerrG 1.0e30 0.99 r 1.0)) 1e-2 &&
+       relClose knD (diff (fun r => knG 1.0e30 0.99 1.0e18 r 1.0)) 1e-6) = true := by
+  -- native_decide: evaluates the compiled model
+  native_decide
+
 /-! ## Horizons -/
 
 /-- PROP metric.kerr.extremal_horizon : PROVEN

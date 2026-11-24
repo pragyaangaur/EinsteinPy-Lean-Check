@@ -1,0 +1,11 @@
+id: coordinates-bl-error-message
+title: the CoordinateError of BoyerLindquistDifferential prints a placeholder instead of the system name
+area: Coordinates
+kind: docs-mismatch
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/coordinates/differential.py:525-527
+property: EinsteinpyLean.Coordinates.bl_error_message_names_system
+summary: >
+  The messages of the Cartesian and Spherical classes are f-strings, and the Boyer-Lindquist one is a plain string, so it prints the text `{g.coords.system}` between the parentheses: `... coordinate system, ( {g.coords.system} ) other than Boyer-Lindquist Coordinates.` The reader never learns which system the metric uses.
+upstream: NEW, searched einsteinpy issues and pull requests for "CoordinateError message", "BoyerLindquistDifferential" and "differential.py" on 24 Nov 2026. Nothing reports it.

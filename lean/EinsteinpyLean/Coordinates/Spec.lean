@@ -460,4 +460,57 @@ theorem radius_is_dist (p : Space 3) :
   rw [Real.sq_sqrt (by positivity)]
   simp
 
+/-! ## The time component of a 4-velocity -/
+
+/-- The discriminant `B² - 4 A C` of utils.py:253-262 `v0`, for a metric `g` (a matrix over `Fin 4`),
+the speed of light `c` and the spatial components `v1 v2 v3`. -/
+def v0Disc (g : Fin 4 → Fin 4 → ℝ) (c v1 v2 v3 : ℝ) : ℝ :=
+  (2 * (g 0 1 * v1 + g 0 2 * v2 + g 0 3 * v3)) ^ 2
+    - 4 * g 0 0 * ((g 1 1 * v1 ^ 2 + g 2 2 * v2 ^ 2 + g 3 3 * v3 ^ 2)
+      + 2 * v1 * (g 1 2 * v2 + g 1 3 * v3) + 2 * v2 * g 2 3 * v3 + -1 * c ^ 2)
+
+/-- utils.py:263-264, `v_t = (-B + sqrt D) / (2 A)`. -/
+noncomputable def v0 (g : Fin 4 → Fin 4 → ℝ) (c v1 v2 v3 : ℝ) : ℝ :=
+  (-(2 * (g 0 1 * v1 + g 0 2 * v2 + g 0 3 * v3)) + √(v0Disc g c v1 v2 v3)) / (2 * g 0 0)
+
+/-- PROP coordinates.v0.normalised : PROVEN
+Source: utils.py:232-264 `v0` ("Timelike component (v0) of 4-Velocity"). For a symmetric metric with
+`g_00 ≠ 0` and a nonnegative discriminant, the vector `u = (v0, v1, v2, v3)` satisfies
+`g_μν u^μ u^ν = c²`, the normalisation of a 4-velocity in the signature `(+, -, -, -)` that the
+docstring assumes. -/
+theorem v0_normalised {g : Fin 4 → Fin 4 → ℝ} (hsym : ∀ i j, g i j = g j i) {c v1 v2 v3 : ℝ}
+    (hA : g 0 0 ≠ 0) (hD : 0 ≤ v0Disc g c v1 v2 v3) :
+    ∑ i, ∑ j, g i j * ![v0 g c v1 v2 v3, v1, v2, v3] i * ![v0 g c v1 v2 v3, v1, v2, v3] j = c ^ 2 := by
+  simp only [Fin.sum_univ_four]
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.cons_val_three,
+    Matrix.vecHead, Matrix.vecTail, Function.comp_apply, Fin.succ_zero_eq_one,
+    Fin.succ_one_eq_two]
+  rw [hsym 1 0, hsym 2 0, hsym 3 0, hsym 2 1, hsym 3 1, hsym 3 2]
+  unfold v0
+  have hs : √(v0Disc g c v1 v2 v3) ^ 2 = v0Disc g c v1 v2 v3 := Real.sq_sqrt hD
+  generalize √(v0Disc g c v1 v2 v3) = s at *
+  unfold v0Disc at hs
+  field_simp
+  linear_combination hs
+
+/-- PROP coordinates.lorentz_factor.identity : PROVEN
+Source: utils.py:225-229 `lorentz_factor`, `gamma = 1 / sqrt (1 - v² / c²)`. For `|v| < c` it satisfies
+`γ² (1 - v² / c²) = 1` and `γ ≥ 1`. At `|v| = c` the code returns `inf` and above `c` it returns
+`nan`, both without an exception, because the function is not jitted (a division by zero is not an
+error for NumPy floats). -/
+theorem lorentz_factor_identity {c v1 v2 v3 : ℝ} (hc : 0 < c) (hv : v1 ^ 2 + v2 ^ 2 + v3 ^ 2 < c ^ 2) :
+    (1 / √(1 - (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2)) ^ 2 * (1 - (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2) = 1
+      ∧ 1 ≤ 1 / √(1 - (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2) := by
+  have h0 : 0 < 1 - (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2 := by
+    rw [sub_pos, div_lt_one (by positivity)]; exact hv
+  have h1 : 1 - (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2 ≤ 1 := by
+    have : 0 ≤ (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2 := by positivity
+    linarith
+  have hr : 0 < √(1 - (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2) := Real.sqrt_pos.2 h0
+  refine ⟨?_, ?_⟩
+  · rw [div_pow, Real.sq_sqrt h0.le]; field_simp
+  · rw [le_div_iff₀ hr, one_mul]
+    calc √(1 - (v1 ^ 2 + v2 ^ 2 + v3 ^ 2) / c ^ 2) ≤ √1 := Real.sqrt_le_sqrt h1
+      _ = 1 := Real.sqrt_one
+
 end EinsteinpyLean.Coordinates.Spec

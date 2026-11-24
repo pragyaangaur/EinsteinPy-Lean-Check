@@ -237,6 +237,115 @@ theorem minkowski_einstein_zero (d : ℕ) (i j : Fin 1 ⊕ Fin d) :
       (fun a b => minkowskiMatrix (d := d) a b) i j = 0 := by
   simp [einstein, scal, ric, riem]
 
+/-- `∂_r Γ^t_{sn}` for the Christoffel symbols of a metric jet (`Gi = g⁻¹`, `D k i j = ∂_k g_ij`,
+`DD k l i j = ∂_k ∂_l g_ij`), using `∂(g⁻¹) = -g⁻¹ (∂g) g⁻¹`. -/
+def dchris (Gi : Matrix ι ι ℝ) (D : ι → Matrix ι ι ℝ) (DD : ι → ι → Matrix ι ι ℝ)
+    (r t s n : ι) : ℝ :=
+  ∑ m, ((-(Gi * D r * Gi)) t m / 2 * (D n m s + D s m n - D m s n) +
+    Gi t m / 2 * (DD r n m s + DD r s m n - DD r m s n))
+
+lemma sum_sym (X A : ι → ι → ℝ) (hX : ∀ a b, X a b = X b a) :
+    ∑ t, ∑ m, X t m * A m t = ∑ t, ∑ m, X t m * A t m := by
+  rw [sum_comm]
+  exact sum_congr rfl fun t _ => sum_congr rfl fun m _ => by rw [hX m t]
+
+
+lemma cancel3 (X P S Q : ι → ι → ℝ) (hX : ∀ a b, X a b = X b a) (hPQ : ∀ t m, Q t m = P m t) :
+    ∑ t, ∑ m, X t m / 2 * (P t m + S t m - Q t m) = ∑ t, ∑ m, X t m / 2 * S t m := by
+  have h := sum_sym (fun a b => X a b / 2) P (fun a b => by rw [hX a b])
+  have e : ∀ t m, X t m / 2 * (P t m + S t m - Q t m) =
+      X t m / 2 * P t m + X t m / 2 * S t m - X t m / 2 * P m t := fun t m => by
+    rw [hPQ t m]; ring
+  simp only [e, sum_sub_distrib, sum_add_distrib]
+  rw [h]
+  ring
+
+variable (Gi : Matrix ι ι ℝ) (D : ι → Matrix ι ι ℝ) (DD : ι → ι → Matrix ι ι ℝ)
+  (hGi : ∀ a b, Gi a b = Gi b a) (hD : ∀ k a b, D k a b = D k b a)
+  (hDD : ∀ k l a b, DD k l a b = DD k l b a) (hDDs : ∀ k l a b, DD k l a b = DD l k a b)
+
+include hGi hD in
+lemma dGi_symm (r t m : ι) : (-(Gi * D r * Gi)) t m = (-(Gi * D r * Gi)) m t := by
+  have hGiT : Giᵀ = Gi := by ext a b; exact (hGi b a)
+  have hDT : (D r)ᵀ = D r := by ext a b; exact (hD r b a)
+  have : (Gi * D r * Gi)ᵀ = Gi * D r * Gi := by
+    rw [Matrix.transpose_mul, Matrix.transpose_mul, hGiT, hDT, Matrix.mul_assoc]
+  have h2 := congrFun (congrFun this m) t
+  simp only [Matrix.transpose_apply] at h2
+  simp [h2]
+
+include hD hDD in
+lemma dchris_symm (r t s n : ι) : dchris Gi D DD r t s n = dchris Gi D DD r t n s := by
+  unfold dchris
+  refine sum_congr rfl fun m _ => ?_
+  rw [hD m n s, hDD r m n s]
+  ring
+
+include hGi hD hDD in
+lemma sum_dchris (n s : ι) : ∑ t, dchris Gi D DD n t s t =
+    1 / 2 * ∑ t, ∑ m, (-(Gi * D n * Gi)) t m * D s m t +
+      1 / 2 * ∑ t, ∑ m, Gi t m * DD n s m t := by
+  unfold dchris
+  simp only [sum_add_distrib]
+  rw [cancel3 (fun t m => (-(Gi * D n * Gi)) t m) (fun t m => D t m s) (fun t m => D s m t)
+      (fun t m => D m s t) (dGi_symm Gi D hGi hD n) (fun t m => by simp only [hD m s t]),
+    cancel3 (fun t m => Gi t m) (fun t m => DD n t m s) (fun t m => DD n s m t)
+      (fun t m => DD n m s t) hGi (fun t m => by simp only [hDD n m s t])]
+  simp only [mul_sum, div_eq_mul_inv]
+  refine congrArg₂ _ ?_ ?_ <;> refine sum_congr rfl fun t _ => sum_congr rfl fun m _ => by ring
+
+include hGi hD in
+lemma tr_sym (n s : ι) : ∑ t, ∑ m, (-(Gi * D n * Gi)) t m * D s m t =
+    ∑ t, ∑ m, (-(Gi * D s * Gi)) t m * D n m t := by
+  have h : ∀ A B : Matrix ι ι ℝ, Matrix.trace (A * B) = ∑ t, ∑ m, A t m * B m t := by
+    intro A B; simp [Matrix.trace, Matrix.mul_apply]
+  rw [← h, ← h, Matrix.neg_mul, Matrix.neg_mul, Matrix.trace_neg, Matrix.trace_neg]
+  congr 1
+  calc Matrix.trace (Gi * D n * Gi * D s)
+      = Matrix.trace (D s * (Gi * D n * Gi)) := Matrix.trace_mul_comm _ _
+    _ = Matrix.trace ((D s * Gi * D n) * Gi) := by simp only [Matrix.mul_assoc]
+    _ = Matrix.trace (Gi * (D s * Gi * D n)) := Matrix.trace_mul_comm _ _
+    _ = Matrix.trace (Gi * D s * Gi * D n) := by simp only [Matrix.mul_assoc]
+
+include hGi hD hDD hDDs in
+lemma sum_dchris_symm (n s : ι) :
+    ∑ t, dchris Gi D DD n t s t = ∑ t, dchris Gi D DD s t n t := by
+  rw [sum_dchris Gi D DD hGi hD hDD, sum_dchris Gi D DD hGi hD hDD, tr_sym Gi D hGi hD n s]
+  have : ∀ t m, DD n s m t = DD s n m t := fun t m => hDDs n s m t
+  simp only [this]
+
+include hGi hD hDD hDDs in
+/-- PROP curvature.ricci.symmetric : PROVEN
+Source: textbook, the Ricci tensor of a Levi-Civita connection is symmetric. For the Ricci
+tensor of ricci.py:71 built from the Riemann tensor of riemann.py:87-89 and the Christoffel
+symbols of christoffel.py:73-77 of any metric jet: `Gi` is a symmetric `g⁻¹`, `D k i j = ∂_k g_ij`
+and `DD k l i j = ∂_k ∂_l g_ij` are symmetric in the metric indices, and `DD` is symmetric in the
+derivative indices. -/
+theorem ricci_symm (s n : ι) :
+    ric (riem (chris (fun a b => Gi a b) (fun k i j => D k i j)) (dchris Gi D DD)) s n =
+      ric (riem (chris (fun a b => Gi a b) (fun k i j => D k i j)) (dchris Gi D DD)) n s := by
+  have hΓ : ∀ t s n, chris (fun a b => Gi a b) (fun k i j => D k i j) t s n =
+      chris (fun a b => Gi a b) (fun k i j => D k i j) t n s :=
+    fun t s n => chris_symm _ _ (fun k i j => hD k i j) t s n
+  unfold ric riem
+  simp only [sum_add_distrib, sum_sub_distrib]
+  have a1 : ∑ t, dchris Gi D DD t t s n = ∑ t, dchris Gi D DD t t n s :=
+    sum_congr rfl fun t _ => dchris_symm Gi D DD hD hDD t t s n
+  have a3 : ∑ t, ∑ p, chris (fun a b => Gi a b) (fun k i j => D k i j) p s n *
+        chris (fun a b => Gi a b) (fun k i j => D k i j) t p t =
+      ∑ t, ∑ p, chris (fun a b => Gi a b) (fun k i j => D k i j) p n s *
+        chris (fun a b => Gi a b) (fun k i j => D k i j) t p t :=
+    sum_congr rfl fun t _ => sum_congr rfl fun p _ => by rw [hΓ p s n]
+  have a4 : ∑ t, ∑ p, chris (fun a b => Gi a b) (fun k i j => D k i j) p s t *
+        chris (fun a b => Gi a b) (fun k i j => D k i j) t p n =
+      ∑ t, ∑ p, chris (fun a b => Gi a b) (fun k i j => D k i j) p n t *
+        chris (fun a b => Gi a b) (fun k i j => D k i j) t p s := by
+    rw [sum_comm (f := fun t p => chris (fun a b => Gi a b) (fun k i j => D k i j) p n t *
+        chris (fun a b => Gi a b) (fun k i j => D k i j) t p s)]
+    refine sum_congr rfl fun t _ => sum_congr rfl fun p _ => ?_
+    rw [hΓ t n p, hΓ p t s, mul_comm]
+  rw [a1, sum_dchris_symm Gi D DD hGi hD hDD hDDs n s, a3, a4]
+
 end
 
 end EinsteinpyLean.Curvature.Spec

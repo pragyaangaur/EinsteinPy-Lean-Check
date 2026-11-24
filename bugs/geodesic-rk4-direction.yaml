@@ -1,0 +1,11 @@
+id: geodesic-rk4-direction
+title: RK4naive.direction is always 0, so the t_bound guard never fires and the solver steps past t_bound
+area: Geodesic
+kind: wrong-result
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/integrators/runge_kutta.py:37 (direction) and :44-47 (the guard in step)
+property: EinsteinpyLean.Geodesic.direction_is_not_sign
+summary: >
+  `self.direction = 1 * (t_bound >= t0) - 1 * (not t_bound < t0)` subtracts the same Boolean from itself, so it is `0` for any pair of ordered numbers (`-1` if `t_bound` is NaN). The guard in `step` needs `direction == 1` or `direction == -1`, so it never fires. The docstring says `t_bound` is a boundary that the integration will not pass and that it determines the direction. With `RK4naive(lambda t, y: 1.0, 0.125, 1.0, 1.125, 0.25)` four steps reach `t = 1.125` and a fifth gives `t = 1.375` without a warning. The properties are `direction_is_not_sign` and `rk4_steps_past_bound` for the model, `direction_zero` for integers, and `direction_zero_real` and `direction_is_not_sign_real` over the reals.
+upstream: KNOWN-OPEN, issue https://github.com/einsteinpy/einsteinpy/issues/711 (opened 23 November 2026) reports the same expression with the same example and proposes `1 * (t_bound >= t0) - 1 * (t_bound < t0)`. The code on main is unchanged.

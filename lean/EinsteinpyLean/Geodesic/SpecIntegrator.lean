@@ -227,6 +227,33 @@ theorem halfG_partials (G G' : ℝ → ℝ) (q p : ℝ) (hG : HasDerivAt G (G' q
     convert this using 1
     ring
 
+/-- The tangent map of `flowA` at a point where the second derivatives of `H_A` are `Hqq = H_{q1 q1}`,
+`Hqp = H_{q1 p2}`, `Hpq = H_{p2 q1}`, `Hpp = H_{p2 p2}`. -/
+def tangentA (δ Hqq Hqp Hpq Hpp : ℝ) (u : ℝ × ℝ × ℝ × ℝ) : ℝ × ℝ × ℝ × ℝ :=
+  (u.1, u.2.1 - δ * (Hqq * u.1 + Hqp * u.2.2.2), u.2.2.1 + δ * (Hpq * u.1 + Hpp * u.2.2.2), u.2.2.2)
+
+/-- PROP geodesic.flowA.symplectic : PROVEN
+Source: Christian and Chan 2021, `H_A` is a Hamiltonian in the extended phase space, so its flow `_flow_A` is
+symplectic. The tangent map of the Euler step preserves `dq1 ∧ dp1 + dq2 ∧ dp2` exactly when the mixed second
+derivatives agree, `H_{q1 p2} = H_{p2 q1}`, which is the symmetry of the Hessian of any `C²` function. -/
+theorem tangentA_symplectic (δ Hqq Hqp Hpq Hpp : ℝ) (h : Hqp = Hpq) (u v : ℝ × ℝ × ℝ × ℝ) :
+    omega (tangentA δ Hqq Hqp Hpq Hpp u) (tangentA δ Hqq Hqp Hpq Hpp v) = omega u v := by
+  subst h
+  simp only [omega, tangentA]
+  ring
+
+/-- The tangent map of `flowB` (the copies swapped): `H_B(q2, p1)`. -/
+def tangentB (δ Hqq Hqp Hpq Hpp : ℝ) (u : ℝ × ℝ × ℝ × ℝ) : ℝ × ℝ × ℝ × ℝ :=
+  (u.1 + δ * (Hpq * u.2.2.1 + Hpp * u.2.1), u.2.1, u.2.2.1, u.2.2.2 - δ * (Hqq * u.2.2.1 + Hqp * u.2.1))
+
+/-- PROP geodesic.flowB.symplectic : PROVEN
+Source: as for `_flow_A`, for `H_B(q2, p1)` and `_flow_B`. -/
+theorem tangentB_symplectic (δ Hqq Hqp Hpq Hpp : ℝ) (h : Hqp = Hpq) (u v : ℝ × ℝ × ℝ × ℝ) :
+    omega (tangentB δ Hqq Hqp Hpq Hpp u) (tangentB δ Hqq Hqp Hpq Hpp v) = omega u v := by
+  subst h
+  simp only [omega, tangentB]
+  ring
+
 /-! ## Time symmetry of the compositions -/
 
 section Symmetry

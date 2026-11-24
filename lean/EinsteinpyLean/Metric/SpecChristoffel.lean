@@ -60,6 +60,6 @@ theorem recipe_is_complete (gi : Fin 4 → Fin 4 → ℝ) (dg : Fin 4 → Fin 4 
   obtain ⟨hd0, h13, h23⟩ := hd
   have z : ∀ i m, (i, m) ∉ ({(0, 0), (0, 3), (3, 0), (3, 3), (1, 1), (2, 2)} : Finset (Fin 4 × Fin 4)) → gi i m = 0 := hg
   fin_cases i <;> fin_cases k <;> fin_cases l <;>
-    simp (disch := decide) [chRec, chFull, Fin.sum_univ_four, pairs03, set1, set2, z, hd0, h13, h23] <;> ring
+    simp (disch := decide) [chRec, chFull, Fin.sum_univ_four, pairs03, set1, set2, z, hd0, h13, h23]
 
 end EinsteinpyLean.Metric.Spec

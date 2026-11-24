@@ -1,0 +1,11 @@
+id: predefined-jnw-angular-c
+title: JanisNewmanWinicour does not divide the angular part by c**2, so gam = 1 is not Schwarzschild and Ricci is wrong for c != 1
+area: Predefined
+kind: wrong-result
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/predefined/janis_newman_winicour.py:30-35
+property: EinsteinpyLean.Predefined.Props.jnw_gamma_one_not_schwarzschild
+summary: >
+  g_rr is divided by c**2 but the two angular components are not, unlike every other predefined metric. With c = 2, G = M = 1 and gam = 1 the angular component is r**2 where Schwarzschild (up to the opposite signature) has r**2/4. The Ricci tensor then has R_theta_theta = 1 - c**2, so the metric is not the massless scalar field solution unless c = 1. The docstring says gam = 1 returns the Schwarzschild metric. The Lean model proves the counterexample and checks that at c = 1 the two agree up to sign.
+upstream: KNOWN-OPEN, the author's own PR https://github.com/einsteinpy/einsteinpy/pull/710 (open, not merged on 63e1c54). No issue found.

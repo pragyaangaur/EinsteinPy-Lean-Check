@@ -190,4 +190,97 @@ theorem bl_alpha_zero {x y z : ℝ} (h : 0 < x ^ 2 + y ^ 2 + z ^ 2) :
     rw [Real.mul_self_sqrt (by positivity)]
     congr 1; ring
 
+/-! ## Velocities are the derivatives of the position maps
+
+Each velocity formula of utils.py is the chain rule applied to the position map. A curve is a function
+of `t`, and `HasDerivAt f f' t` says that its derivative at `t` is `f'`. The formulas are copied from
+the source in the same order of factors. -/
+
+/-- PROP coordinates.spherical_to_cartesian.velocity : PROVEN
+Source: utils.py:117-143 `spherical_to_cartesian`. The three velocity formulas are the derivatives of
+`x = r cos φ sin θ`, `y = r sin φ sin θ` and `z = r cos θ`. -/
+theorem sph_to_cart_velocity {r θ φ : ℝ → ℝ} {r' θ' φ' t : ℝ}
+    (hr : HasDerivAt r r' t) (hθ : HasDerivAt θ θ' t) (hφ : HasDerivAt φ φ' t) :
+    HasDerivAt (fun s => r s * cos (φ s) * sin (θ s))
+      (sin (θ t) * cos (φ t) * r' - r t * sin (θ t) * sin (φ t) * φ'
+        + r t * cos (θ t) * cos (φ t) * θ') t ∧
+    HasDerivAt (fun s => r s * sin (φ s) * sin (θ s))
+      (sin (θ t) * sin (φ t) * r' + r t * cos (θ t) * sin (φ t) * θ'
+        + r t * sin (θ t) * cos (φ t) * φ') t ∧
+    HasDerivAt (fun s => r s * cos (θ s)) (cos (θ t) * r' - r t * sin (θ t) * θ') t := by
+  refine ⟨?_, ?_, ?_⟩
+  · exact ((hr.mul hφ.cos).mul hθ.sin).congr_deriv (by (try simp only [Pi.mul_apply]); ring)
+  · exact ((hr.mul hφ.sin).mul hθ.sin).congr_deriv (by (try simp only [Pi.mul_apply]); ring)
+  · exact (hr.mul hθ.cos).congr_deriv (by (try simp only [Pi.mul_apply]); ring)
+
+/-- PROP coordinates.boyer_lindquist_to_cartesian.velocity : PROVEN
+Source: utils.py:165-199 `bl_to_cartesian`. With `xa = sqrt (r² + α²)` the formulas are the derivatives
+of `xa sin θ cos φ`, `xa sin θ sin φ` and `r cos θ`, for every curve with `r² + α² ≠ 0`
+(the code divides by `xa`, so it needs exactly that). -/
+theorem bl_to_cart_velocity {α : ℝ} {r θ φ : ℝ → ℝ} {r' θ' φ' t : ℝ}
+    (hr : HasDerivAt r r' t) (hθ : HasDerivAt θ θ' t) (hφ : HasDerivAt φ φ' t)
+    (hq : r t ^ 2 + α ^ 2 ≠ 0) :
+    HasDerivAt (fun s => √(r s ^ 2 + α ^ 2) * sin (θ s) * cos (φ s))
+      (r t * r' * sin (θ t) * cos (φ t) / √(r t ^ 2 + α ^ 2)
+        + √(r t ^ 2 + α ^ 2) * cos (θ t) * cos (φ t) * θ'
+        - √(r t ^ 2 + α ^ 2) * sin (θ t) * sin (φ t) * φ') t ∧
+    HasDerivAt (fun s => √(r s ^ 2 + α ^ 2) * sin (θ s) * sin (φ s))
+      (r t * r' * sin (θ t) * sin (φ t) / √(r t ^ 2 + α ^ 2)
+        + √(r t ^ 2 + α ^ 2) * cos (θ t) * sin (φ t) * θ'
+        + √(r t ^ 2 + α ^ 2) * sin (θ t) * cos (φ t) * φ') t ∧
+    HasDerivAt (fun s => r s * cos (θ s)) (r' * cos (θ t) - r t * sin (θ t) * θ') t := by
+  have hs : √(r t ^ 2 + α ^ 2) ≠ 0 := (Real.sqrt_pos.2 (lt_of_le_of_ne (by positivity) (Ne.symm hq))).ne'
+  have hxa : HasDerivAt (fun s => √(r s ^ 2 + α ^ 2)) (r t * r' / √(r t ^ 2 + α ^ 2)) t := by
+    refine (((hr.pow 2).add_const (α ^ 2)).sqrt hq).congr_deriv ?_
+    simp only [Pi.pow_apply]
+    field_simp
+    ring
+  refine ⟨?_, ?_, ?_⟩
+  · refine ((hxa.mul hθ.sin).mul hφ.cos).congr_deriv ?_
+    (try simp only [Pi.mul_apply])
+    field_simp
+    try ring
+  · refine ((hxa.mul hθ.sin).mul hφ.sin).congr_deriv ?_
+    (try simp only [Pi.mul_apply])
+    field_simp
+    try ring
+  · exact (hr.mul hθ.cos).congr_deriv (by (try simp only [Pi.mul_apply]); ring)
+
+/-- The derivative of `arccos (z / R)` for curves `z` and `R`. -/
+theorem arccos_div_velocity {z R : ℝ → ℝ} {vz R' t : ℝ} (hz : HasDerivAt z vz t)
+    (hR : HasDerivAt R R' t) (h0 : R t ≠ 0) (h1 : z t / R t ≠ -1) (h2 : z t / R t ≠ 1) :
+    HasDerivAt (fun s => arccos (z s / R s))
+      ((-1 / √(1 - (z t / R t) ^ 2)) * ((vz * R t - R' * z t) / R t ^ 2)) t := by
+  have h := (Real.hasDerivAt_arccos h1 h2).comp t (hz.div hR h0)
+  exact h.congr_deriv (by ring)
+
+/-- The derivative of `arctan (y / x)` for curves `x` and `y` with `x ≠ 0`. -/
+theorem arctan_div_velocity {x y : ℝ → ℝ} {vx vy t : ℝ} (hx : HasDerivAt x vx t)
+    (hy : HasDerivAt y vy t) (h0 : x t ≠ 0) :
+    HasDerivAt (fun s => arctan (y s / x s))
+      ((1 / (1 + (y t / x t) ^ 2)) * ((vy * x t - vx * y t) / x t ^ 2)) t := by
+  have h := (hy.div hx h0).arctan
+  exact h.congr_deriv (by simp only [Pi.div_apply]; ring)
+
+/-- PROP coordinates.cartesian_to_spherical.velocity_phi : PROVEN
+Source: utils.py:25-44, `v_p = -1 * (v_x * y - x * v_y) / n1` with `n1 = x² + y²`. It is the derivative of
+`arctan (y / x)`, that is of `φ` on each side of the plane `x = 0` (`φ` and `arctan (y / x)` differ by a
+constant there, see `atan2_eq_arctan`), and unlike the Boyer-Lindquist form of the same derivative
+(`arctan_div_velocity`) it needs only `(x, y) ≠ (0, 0)`. -/
+theorem sph_vp_formula {x y vx vy : ℝ} (h0 : x ≠ 0) :
+    (1 / (1 + (y / x) ^ 2)) * ((vy * x - vx * y) / x ^ 2)
+      = -1 * (vx * y - x * vy) / (x ^ 2 + y ^ 2) := by
+  have : x ^ 2 + y ^ 2 ≠ 0 := by positivity
+  field_simp
+  ring
+
+/-- For `x > 0`, `arctan2 y x = arctan (y / x)`. -/
+theorem atan2_eq_arctan {x y : ℝ} (hx : 0 < x) : atan2 y x = arctan (y / x) := by
+  unfold atan2
+  have hre : (0 : ℝ) < (⟨x, y⟩ : ℂ).re := hx
+  have h1 : |Complex.arg ⟨x, y⟩| < π / 2 := Complex.abs_arg_lt_pi_div_two_iff.2 (Or.inl hre)
+  have h2 : tan (Complex.arg ⟨x, y⟩) = y / x := Complex.tan_arg _
+  rw [← h2]
+  exact (arctan_tan (by linarith [(abs_lt.1 h1).1]) (by linarith [(abs_lt.1 h1).2])).symm
+
 end EinsteinpyLean.Coordinates.Spec

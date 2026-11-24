@@ -8,4 +8,5 @@ source: src/einsteinpy/symbolic/predefined/minkowski.py:19 and src/einsteinpy/sy
 property: EinsteinpyLean.Predefined.Props.signature_mismatch
 summary: >
   Minkowski, de Sitter, Barriola-Vilenkin, Bertotti-Kasner, Janis-Newman-Winicour and the others have signature (-,+,+,+). Schwarzschild, Kerr, Kerr-Newman and Reissner-Nordstrom have (+,-,-,-). At c = 1 the time-time component of MinkowskiCartesian is -1 and that of Schwarzschild with sch = 0 is +1, although both describe flat spacetime. In Physlib terms, Minkowski is -eta (EinsteinpyLean.Predefined.Spec.epMinkowski_eq_neg_eta) while the Schwarzschild exterior matches Physlib's formulas (schwarzschild_matches_physlib). The docstrings do not say which signature each function uses. Mixing them gives wrong signs in any computation that combines two predefined metrics or an electromagnetic stress-energy tensor.
-upstream: NEW, no issue or pull request found (searched "signature predefined metric"). The author's PR #710 mentions the difference in passing.
+upstream: >
+  NEW, no issue or pull request found (searched "signature predefined metric"). The author's PR #710 mentions the difference in passing.

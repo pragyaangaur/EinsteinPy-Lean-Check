@@ -12,3 +12,35 @@ name = "EinsteinpyLean"
 [[lean_exe]]
 name = "epdiff"
 root = "Main"
+
+[[lean_exe]]
+name = "epdiff_tensor"
+root = "exe.Tensor"
+
+[[lean_exe]]
+name = "epdiff_helpers"
+root = "exe.Helpers"
+
+[[lean_exe]]
+name = "epdiff_curvature"
+root = "exe.Curvature"
+
+[[lean_exe]]
+name = "epdiff_predefined"
+root = "exe.Predefined"
+
+[[lean_exe]]
+name = "epdiff_utils"
+root = "exe.Utils"
+
+[[lean_exe]]
+name = "epdiff_coordinates"
+root = "exe.Coordinates"
+
+[[lean_exe]]
+name = "epdiff_metric"
+root = "exe.Metric"
+
+[[lean_exe]]
+name = "epdiff_geodesic"
+root = "exe.Geodesic"

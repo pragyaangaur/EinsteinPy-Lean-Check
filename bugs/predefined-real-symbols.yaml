@@ -1,0 +1,11 @@
+id: predefined-real-symbols
+title: FriedmannLemaitreRobertsonWalker and KerrNewmanDeSitter use real=True symbols, which differ from the plain symbols of every other predefined metric
+area: Predefined
+kind: inconsistent
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/predefined/friedmann_lemaitre_robertson_walker.py:23-24 and src/einsteinpy/symbolic/predefined/kerr_newman_desitter.py:21-22
+property: none (observed in einsteinpy only, the Lean model works on values)
+summary: >
+  All older predefined metrics build their coordinates with symbols("t r theta phi"). These two use real=True, and sympy treats Symbol("r") and Symbol("r", real=True) as different symbols. Code that does metric.tensor().subs(Symbol("r"), 2) works for Schwarzschild and silently changes nothing for FLRW. KerrNewmanDeSitter also has no parameters, so its Lambda is a plain symbol and not constants.Cosmo_Const.
+upstream: NEW, no issue or pull request found. Both metrics came from PR https://github.com/einsteinpy/einsteinpy/pull/672.

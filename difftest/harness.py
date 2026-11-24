@@ -15,7 +15,7 @@ import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-EPDIFF = ROOT / "lean" / ".lake" / "build" / "bin" / "epdiff"
+BIN = ROOT / "lean" / ".lake" / "build" / "bin"
 
 
 def arr_token(shape, data):
@@ -44,7 +44,8 @@ def sympy_render(arr):
     return render(arr.shape, list(sympy.flatten(arr.tolist())))
 
 
-def run(gen, default_cases=50000):
+def run(gen, default_cases=50000, exe="epdiff"):
+    """Run the test. ``exe`` is ``epdiff`` or an area executable such as ``epdiff_curvature``."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--cases", type=int, default=default_cases)
     ap.add_argument("--seed", type=int, default=0)
@@ -59,7 +60,7 @@ def run(gen, default_cases=50000):
     t1 = time.time()
 
     proc = subprocess.run(
-        [str(EPDIFF)],
+        [str(BIN / exe)],
         input="\n".join(c[0] for c in cases) + "\n",
         capture_output=True,
         text=True,

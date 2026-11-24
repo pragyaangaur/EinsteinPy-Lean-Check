@@ -167,4 +167,4 @@ def gen(rng):
 
 if __name__ == "__main__":
     sys.setrecursionlimit(10000)
-    run(gen, default_cases=50000)
+    run(gen, default_cases=50000, exe="epdiff_tensor")

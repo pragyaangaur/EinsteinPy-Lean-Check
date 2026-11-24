@@ -1,0 +1,11 @@
+id: geodesic-shadow-root-int-mass
+title: Shadow._root_equation truncates the mass to int(mass) while b_crit, horizon and the intensities use the mass itself
+area: Geodesic
+kind: inconsistent
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/rays/shadow.py:51 (int(self.mass.value)), against :16, :17 and :55-76
+property: EinsteinpyLean.Geodesic.root_equation_truncates_mass
+summary: >
+  The turning point of a ray with impact parameter `b` solves `r / sqrt(1 - 2 M / r) = b`. `_root_equation` writes the mass as `int(self.mass.value)`, while `horizon = 2 * mass.value`, `b_crit = 3 sqrt 3 * mass` and the intensity integrands use the mass itself. For `M = 1.5` the root equation at `r = 4` is `5.657` (the value for `M = 1`), where `r / sqrt(1 - 2M/r) = 8`. A non integer mass therefore uses two different black holes in one calculation (`mass = 2.5` has `b_crit = 12.99` but turning points for `M = 2`), and a mass below 1 gives `M = 0`. The module also mixes units: the mass is converted to kg and its value is used as a length, `b_crit` is a quantity in kg, and `fov` is converted to km, so `_compute_B` runs `np.linspace` from a kg value to a km value. The property is `root_equation_truncates_mass`; the closed forms (`impact_ge_bCrit`, `impact_eq_bCrit_iff`) that the code should be consistent with are proved over the reals in `SpecRays.lean`.
+upstream: NEW. Searches for the Shadow class, the root equation, mass and units found issues 398 and 399 (the feature and its pull request) and 636, 637 and 663 about convergence, none about the truncation of the mass. shadow.py on main is byte for byte the pinned file.

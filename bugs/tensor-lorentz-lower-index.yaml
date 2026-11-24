@@ -1,0 +1,11 @@
+id: tensor-lorentz-lower-index
+title: lorentz_transform transforms lower indices with the matrix instead of its inverse, so contractions are not invariant
+area: Tensor
+kind: wrong-result
+severity: high
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/tensor.py:441-447
+property: EinsteinpyLean.Tensor.Spec.main_not_preserves_contraction
+summary: >
+  A lower index is contracted with axis 0 of the transformation matrix, which gives `w' = Λᵀ w`. The correct rule is `w' = (Λ⁻¹)ᵀ w`. Physlib's `LorentzGroup` gives the general statement: with the corrected rule, `v^a w_a` is preserved for every Lorentz transformation and lowering commutes with the transform (`fixed_preserves_contraction`, `fixed_lower_comm`), while the rule on main fails for the 3/5 boost in 1+1 dimensions (`main_not_preserves_contraction`). In einsteinpy, `v^a = (1, 2)` and `w_a = (1, 2)` have `v^a w_a = 5` before the boost and `145/8` after it. Every covariant or mixed object (metric, Christoffel, Riemann, Ricci, Einstein, Weyl, Schouten, stress-energy) is affected.
+upstream: KNOWN-OPEN, issues https://github.com/einsteinpy/einsteinpy/issues/374 and #355, fixed by the author's own PR https://github.com/einsteinpy/einsteinpy/pull/708 (open, not merged on 63e1c54). The Lean proofs here check that the rule in #708 is right for all of Physlib's Lorentz group.

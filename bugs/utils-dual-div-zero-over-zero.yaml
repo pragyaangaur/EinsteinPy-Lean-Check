@@ -1,0 +1,11 @@
+id: utils-dual-div-zero-over-zero
+title: DualNumber quotient with two zero values returns derivative 0
+area: Utils
+kind: wrong-result
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/utils/dual.py:84-85
+property: EinsteinpyLean.Utils.xx_over_x_derivative_wrong
+summary: >
+  When both values are zero `__truediv__` returns `DualNumber(self.deriv / other.deriv, 0.0)`. The value is the l'Hopital limit, but the derivative is set to `0.0` for every input. For `x = DualNumber(0, 1)` the expression `x * x / x` is the function `x`, whose derivative is `1`, and the code answers `DualNumber(0.0, 0.0)`. `_diff_g` then silently reports a wrong metric derivative at a removable singularity instead of raising. Mathlib shows `deriv (fun y => y * y / y) 0 = 1`.
+upstream: NEW, searched einsteinpy issues and PRs for "DualNumber", "dual number", "_jacobian_g", "dual.py" and "automatic differentiation" on 24 Nov 2026. Nothing reports it, and dual.py is unchanged on main since the Python 3.15 CI commit

@@ -1,6 +1,7 @@
 import EinsteinpyLean.Common.Handler
 import EinsteinpyLean.Utils.Codec
 import EinsteinpyLean.Geodesic.Model
+import EinsteinpyLean.Geodesic.ModelRays
 
 /-!
 # `epdiff_geodesic` handlers
@@ -37,9 +38,10 @@ def pOptF (s : String) : Option (Option Float) :=
 
 def rF (l : List Float) : String := if l.isEmpty then "-" else ",".intercalate (l.map renderFloat)
 
-def rErr (e : Exc) : String := "E:" ++ e.tag
+/-- The class of the exception, without its message. -/
+def rErr (e : Exc) : String := "E:" ++ (e.tag.splitOn ":").head!
 
-def rGErr (e : GErr) : String := "E:" ++ e.tag
+def rGErr (e : GErr) : String := "E:" ++ (e.tag.splitOn ":").head!
 
 def mkVec (l : List Float) (o : Bool) : Option Vec :=
   if l.length != 4 then none else some ⟨l.toArray, o⟩
@@ -261,10 +263,71 @@ def hRk45 : Handler
     | _, _, _ => badInput
   | _ => badInput
 
+/-- `geo.sh.consts <m>`: `b_crit` and `horizon`. -/
+def hShConsts : Handler
+  | [m] => match parseFloat m with
+    | some m => rF [bCrit m, horizon m]
+    | none => badInput
+  | _ => badInput
+
+/-- `geo.sh.b <m> <fov> <n>`: `_compute_B`. -/
+def hShB : Handler
+  | [m, f, n] => match parseFloat m, parseFloat f, n.toInt? with
+    | some m, some f, some n =>
+      match linspace (bCrit m) f n with
+      | .ok a => rF a.toList
+      | .error e => rErr e
+    | _, _, _ => badInput
+  | _ => badInput
+
+/-- `geo.sh.int <blue|red> <m> <b> <r list>`: the integrands on an array of nodes. -/
+def hShInt : Handler
+  | [c, m, b, rs] => match parseFloat m, parseFloat b, pFloats rs with
+    | some m, some b, some rs =>
+      if c == "blue" || c == "red" then rF (rs.map (intensity (c == "blue") m b)) else badInput
+    | _, _, _ => badInput
+  | _ => badInput
+
+/-- `geo.sh.root <m> <r> <i>`: `_root_equation`. -/
+def hShRoot : Handler
+  | [m, r, i] => match parseFloat m, parseFloat r, parseFloat i with
+    | some m, some r, some i =>
+      match rootEq m r i with
+      | .ok (.re x) => "F" ++ renderFloat x
+      | .ok (.cx a b) => "C" ++ renderFloat a ++ "," ++ renderFloat b
+      | .error e => rErr e
+    | _, _, _ => badInput
+  | _ => badInput
+
+/-- `geo.emb.ctor <m kg>`: `self.M.value` and `self.r_init.value`. -/
+def hEmbCtor : Handler
+  | [m] => match parseFloat m with
+    | some m => let M := embMass m; rF [M, embRInit M]
+    | none => badInput
+  | _ => badInput
+
+/-- `geo.emb.f <M> <r>`: `radial_coord` and `gradient` for a mass value `M`. -/
+def hEmbF : Handler
+  | [m, r] => match parseFloat m, parseFloat r with
+    | some m, some r => rF [radialCoord m r, gradient m r]
+    | _, _ => badInput
+  | _ => badInput
+
+/-- `geo.emb.vals <m kg> <alpha>`: `get_values(alpha)`, x axis then y axis. -/
+def hEmbVals : Handler
+  | [m, a] => match parseFloat m, parseFloat a with
+    | some m, some a =>
+      let (xs, ys) := getValues (embMass m) a
+      s!"{rF xs.toList};{rF ys.toList}"
+    | _, _ => badInput
+  | _ => badInput
+
 def handlers : List (String × Handler) :=
   [("geo.metric", hMetric), ("geo.dmetric", hDMetric), ("geo.jac", hJac), ("geo.sigma", hSigma),
    ("geo.delta", hDelta), ("geo.P", hP), ("geo.z", hZ), ("geo.flow", hFlow), ("geo.mixed", hMixed),
    ("geo.step", hStep), ("geo.run", hRun), ("geo.geodesic", hGeodesic), ("geo.rk4", hRk4),
-   ("geo.rk45", hRk45)]
+   ("geo.rk45", hRk45),
+   ("geo.sh.consts", hShConsts), ("geo.sh.b", hShB), ("geo.sh.int", hShInt), ("geo.sh.root", hShRoot),
+   ("geo.emb.ctor", hEmbCtor), ("geo.emb.f", hEmbF), ("geo.emb.vals", hEmbVals)]
 
 end EinsteinpyLean.Geodesic

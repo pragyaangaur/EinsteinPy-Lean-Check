@@ -1,0 +1,11 @@
+id: predefined-symbolicconstant-overwrites
+title: SymbolicConstant("c") overwrites the descriptive name of the module level constants.c
+area: Predefined
+kind: wrong-result
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/constants.py:26-28
+property: EinsteinpyLean.Predefined.Props.new_constant_overwrites_global
+summary: >
+  Symbol.__new__ is cached by name, so SymbolicConstant(name, descriptive_name) returns the existing object for that name and line 27 then overwrites its _descriptive_name. After SymbolicConstant("c") the global constants.c, and everything that holds it, has descriptive_name None, and get_constant("c") reports None. Creating a constant with another description changes the old one the same way. The effect depends on the sympy cache (it does not occur with SYMPY_USE_CACHE=no, or after the cache entry has been evicted). The difftest in difftest/predefined_constants_diff.py runs in its own process so that the cache is stable.
+upstream: NEW, no issue or pull request found (searched SymbolicConstant).

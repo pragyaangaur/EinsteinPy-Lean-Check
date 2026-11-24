@@ -6,6 +6,7 @@ import EinsteinpyLean.Utils.Diff
 import EinsteinpyLean.Coordinates.Diff
 import EinsteinpyLean.Metric.Diff
 import EinsteinpyLean.Geodesic.Diff
+import EinsteinpyLean.Curvature.Diff
 
 /-! `epdiff`: every wired-in area. One case per stdin line, one answer per stdout line. -/
 
@@ -13,7 +14,7 @@ open EinsteinpyLean
 
 def allHandlers : List (String × Handler) :=
   Tensor.handlers ++ Helpers.handlers ++ Predefined.handlers ++ Utils.handlers ++
-    Coordinates.handlers ++ Metric.handlers ++ Geodesic.handlers
+    Coordinates.handlers ++ Metric.handlers ++ Geodesic.handlers ++ Curvature.handlers
 
 def main : IO Unit := do
   -- Two areas must never claim the same operation name, because lookup takes the first.

@@ -1,0 +1,11 @@
+id: geodesic-embedding-gradient-factor
+title: SchwarzschildEmbedding.gradient has an extra factor sqrt(R) and is not the slope of the optical geometry
+area: Geodesic
+kind: wrong-result
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/hypersurface/schwarzschildembedding.py:70-92 (gradient), used by get_values and get_values_surface
+property: EinsteinpyLean.Geodesic.gradient_is_not_optical_slope
+summary: >
+  The class embeds the optical geometry of Schwarzschild, `dr^2 / f^2 + r^2 dphi^2 / f` with `f = 1 - 2M/r`: the radius of the surface is `R = r / sqrt(f)` (`radial_coord`) and the embedding "breaks at r < 9m/4", which is the radicand `4 M r - 9 M^2`. Matching `dR^2 + dz^2 = dr^2 / f^2` gives `dz/dr = sqrt(4 M r - 9 M^2) / (r f^(3/2))`. The code's `num_one * num_two / deno` equals this slope times `sqrt(R)` (proved for `r > 3M`, `codeGrad_eq`), where `R` is a length. A slope is dimensionless, so the result changes when the unit of length changes: scaling `M` and `r` by 2 multiplies the gradient by `sqrt 2`. For `M = 40` (4e24 kg) and `r = 1200`, upstream's own `test_gradient` pins the value `13.7267`, while the slope that satisfies the isometry condition is `0.3895` (the isometry sum is `189.4` instead of `1/f^2 = 1.148`). The surface that `get_values` integrates from this gradient is therefore not an isometric embedding. The properties are `gradient_is_not_optical_slope` and `gradient_not_scale_invariant` (model, with `gradient_pinned_value` for upstream's value) and `codeGrad_not_scale_invariant` over the reals, with `codeGrad_eq` and `optSlope_isometry`. The module does not contain the Flamm paraboloid `z = 2 sqrt(rs (r - rs))`; `flamm_slope` checks that it has the right factor and units for comparison.
+upstream: NEW. Searches for the embedding, gradient and hypersurface found only the old implementation issues 106, 107, 136 and 273 (the feature requests, which do not discuss the formula) and issue 275 (G and c values in the module). schwarzschildembedding.py on main is byte for byte the pinned file, and tests/test_hypersurface/test_schwarzschildembedding.py pins the value of the buggy gradient.

@@ -58,6 +58,25 @@ theorem flat_riemann_zero :
   -- native_decide: concrete evaluation of the compiled model, see the file header
   native_decide
 
+/-- The metric `diag(-1, 1 + x²/3, 1 + t x/5)` in the coordinates `(t, x, y)`, at `t = 1/3`,
+`x = 1/2`. It is the metric of `bugs/repro/curvature-einstein-float-half.py`. -/
+def einsteinJet : Jet :=
+  ⟨3, ⟨[3, 3], #[-1, 0, 0, 0, 13/12, 0, 0, 0, 31/30]⟩,
+   ⟨[3, 3, 3], (Array.replicate 27 (0 : Rat)).set! 13 (1/3) |>.set! 8 (1/10) |>.set! 17 (1/15)⟩,
+   ⟨[3, 3, 3, 3], (Array.replicate 81 (0 : Rat)).set! 40 (2/3) |>.set! 17 (1/5) |>.set! 35 (1/5)⟩⟩
+
+/-- PROP curvature.einstein.exact_zero_component : PROVEN
+Source: arithmetic. At this rational point the `yy` component of `Ric - ½ R g` is exactly
+zero. The model computes it on rationals and gets `0`. einsteinpy takes the factor from the
+Python float `1 / 2` (einstein.py:55) and returns `-4.3e-19` for the same component, see
+`bugs/curvature-einstein-float-half.yaml`. -/
+theorem einstein_exact_zero_component :
+    (match fromMetric "ll" einsteinJet with
+      | .ok (p, _) => decide ((einsteinOf p).get [2, 2] = 0)
+      | .error _ => false) = true := by
+  -- native_decide: concrete evaluation of the compiled model, see the file header
+  native_decide
+
 /-- PROP curvature.schouten.dimension_below_three_raises : PROVEN
 Source: schouten.py:59-62 docstring, "Raised when the dimension of the tensor is less than
 3". The model raises for every pipeline of dimension 1 or 2. -/

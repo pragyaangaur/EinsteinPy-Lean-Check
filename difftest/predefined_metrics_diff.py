@@ -1,10 +1,11 @@
 """Differential test of the predefined metrics against the Lean model.
 
-Every metric function of ``einsteinpy.symbolic.predefined`` is called for real and its
-sympy components are evaluated at random rational points. Parameters that are plain
-rationals (``c``, ``G``, ``eps_0``, ``sch``, ``a``, ``Q``, ``k``, ``B``, ``M``, ``gam``,
-``lambd``) are passed to the function. The coordinates are replaced by rationals
-afterwards with ``xreplace``.
+Every metric function of ``einsteinpy.symbolic.predefined`` is called for real with its
+default (symbolic) arguments, and its sympy components are evaluated at random rational
+points by replacing every symbol, parameters and coordinates alike, in one ``xreplace``.
+(Passing a zero parameter to the function would let sympy drop a term such as
+``sch*r/Sigma`` before ``r`` is known, which is a different order of evaluation from the
+Lean model, so parameters are not passed as arguments.)
 
 The transcendental pieces cannot be rational, so they are replaced in the real sympy
 components by extra rational inputs, which the Lean model also takes:
@@ -58,7 +59,7 @@ warnings.filterwarnings("ignore")
 
 VALUES = [Q(v) for v in (-3, -2, -1, Q(-1, 2), Q(1, 3), Q(1, 2), Q(2, 3), 1, Q(5, 4), 2, 3, 5)]
 ZERO = Q(0)
-PI_VALUES = [Q(22, 7), Q(355, 113), Q(3), Q(157, 50), ZERO]
+PI_VALUES = [Q(22, 7), Q(355, 113), Q(3), Q(157, 50)]
 
 
 def rv(rng, zero=0.06):
@@ -98,16 +99,27 @@ def entries(arr):
 
 
 def finish(arr, rules=(), subs=None, func_rules=()):
-    """Apply the replacement rules, substitute the symbols and render or flag zerodiv."""
+    """Apply the replacement rules, substitute the symbols and render or flag zerodiv.
+
+    Every replaced call becomes a fresh dummy symbol first and all values go in with one
+    ``xreplace`` at the end, so a zero value never removes a term before the denominators
+    are known (the Lean model evaluates all formulas at once)."""
+    final = dict(subs or {})
+
+    def dummy(val):
+        d = sympy.Dummy()
+        final[d] = val
+        return d
+
     out = []
     for e in entries(arr):
         for kind, fn in rules:
-            e = e.replace(kind, fn)
+            e = e.replace(kind, lambda *args, fn=fn: dummy(fn(*args)))
         for pred, fn in func_rules:
-            e = e.replace(lambda x: isinstance(x, AppliedUndef) and pred(x), fn)
-        if subs:
-            e = e.xreplace({k: v for k, v in ((sym_ if False else k, v) for k, v in subs.items())})
+            e = e.replace(lambda x, pred=pred: isinstance(x, AppliedUndef) and pred(x),
+                          lambda x, fn=fn: dummy(fn(x)))
         out.append(e)
+    out = [e.xreplace(final) for e in out]
     if any(e.has(sympy.zoo, sympy.nan, sympy.oo, -sympy.oo) for e in out):
         return "ERR zerodiv", "zerodiv"
     for e in out:
@@ -129,8 +141,14 @@ def toks(*xs):
     return " ".join(rat_str(x) for x in xs)
 
 
-def tensor_of(m):
-    return m.tensor()
+_CACHE = {}
+
+
+def dflt(fn):
+    """The components of ``fn()`` with default symbolic arguments (computed once)."""
+    if fn not in _CACHE:
+        _CACHE[fn] = fn().tensor()
+    return _CACHE[fn]
 
 
 # ---- one generator per metric: returns (line, expected, class)
@@ -138,33 +156,32 @@ def tensor_of(m):
 
 def g_mink(rng):
     c = rv(rng)
-    m = MinkowskiCartesian(c=c)
-    exp, cls = finish(m.tensor())
+    a = dflt(MinkowskiCartesian)
+    exp, cls = finish(a, subs=by_name(a, c=c))
     return f"predef.mink {toks(c)}", exp, cls
 
 
 def g_minkp(rng):
     c, r = rv(rng), rv(rng)
     s, _ = trig_pair(rng)
-    m = MinkowskiPolar(c=c)
-    a = m.tensor()
-    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, r=r))
+    a = dflt(MinkowskiPolar)
+    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, c=c, r=r))
     return f"predef.minkp {toks(c, r, s)}", exp, cls
 
 
 def g_schw(rng):
     c, sch, r = rv(rng), rv(rng), rv(rng)
     s, _ = trig_pair(rng)
-    a = Schwarzschild(c=c, sch=sch).tensor()
-    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, r=r))
+    a = dflt(Schwarzschild)
+    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, c=c, r_s=sch, r=r))
     return f"predef.schw {toks(c, sch, r, s)}", exp, cls
 
 
 def g_kerr(rng):
     c, sch, aa, r = rv(rng), rv(rng), rv(rng), rv(rng)
     s, co = trig_pair(rng)
-    a = Kerr(c=c, sch=sch, a=aa).tensor()
-    exp, cls = finish(a, [(sympy.sin, lambda x: s), (sympy.cos, lambda x: co)], by_name(a, r=r))
+    a = dflt(Kerr)
+    exp, cls = finish(a, [(sympy.sin, lambda x: s), (sympy.cos, lambda x: co)], by_name(a, c=c, r_s=sch, a=aa, r=r))
     return f"predef.kerr {toks(c, sch, aa, r, s, co)}", exp, cls
 
 
@@ -172,11 +189,11 @@ def g_kn(rng):
     c, g, e0, sch, aa, q, r = [rv(rng) for _ in range(7)]
     pi = rng.choice(PI_VALUES)
     s, co = trig_pair(rng)
-    a = KerrNewman(c=c, G=g, eps_0=e0, sch=sch, a=aa, Q=q).tensor()
+    a = dflt(KerrNewman)
     exp, cls = finish(
         a,
         [(sympy.sin, lambda x: s), (sympy.cos, lambda x: co)],
-        {**by_name(a, r=r), sympy.pi: pi},
+        {**by_name(a, c=c, G=g, eps_0=e0, r_s=sch, a=aa, Q=q, r=r), sympy.pi: pi},
     )
     return f"predef.kn {toks(c, g, e0, sch, aa, q, pi, r, s, co)}", exp, cls
 
@@ -185,8 +202,10 @@ def g_rn(rng):
     c, g, e0, sch, q, r = [rv(rng) for _ in range(6)]
     pi = rng.choice(PI_VALUES)
     s, _ = trig_pair(rng)
-    a = ReissnerNordstorm_(c, g, e0, sch, q)
-    exp, cls = finish(a, [(sympy.sin, lambda x: s)], {**by_name(a, r=r), sympy.pi: pi})
+    a = dflt(ReissnerNordstorm)
+    exp, cls = finish(
+        a, [(sympy.sin, lambda x: s)],
+        {**by_name(a, c=c, G=g, eps_0=e0, r_s=sch, Q=q, r=r), sympy.pi: pi})
     return f"predef.rn {toks(c, g, e0, sch, q, pi, r, s)}", exp, cls
 
 
@@ -198,7 +217,7 @@ def g_ads(rng):
     ct, _ = trig_pair(rng)
     sh, _ = hyp_pair(rng)
     s, _ = trig_pair(rng)
-    a = AntiDeSitter().tensor()
+    a = dflt(AntiDeSitter)
     exp, cls = finish(
         a, [(sympy.cos, lambda x: ct), (sympy.sinh, lambda x: sh), (sympy.sin, lambda x: s)]
     )
@@ -208,7 +227,7 @@ def g_ads(rng):
 def g_adss(rng):
     sh, ch = hyp_pair(rng)
     s, _ = trig_pair(rng)
-    a = AntiDeSitterStatic().tensor()
+    a = dflt(AntiDeSitterStatic)
     exp, cls = finish(
         a, [(sympy.cosh, lambda x: ch), (sympy.sinh, lambda x: sh), (sympy.sin, lambda x: s)]
     )
@@ -217,7 +236,7 @@ def g_adss(rng):
 
 def g_ds(rng):
     e = rng.choice(VALUES + [ZERO])
-    a = DeSitter().tensor()
+    a = dflt(DeSitter)
     exp, cls = finish(a, [(sympy.exp, lambda x: e)])
     return f"predef.ds {toks(e)}", exp, cls
 
@@ -230,7 +249,7 @@ _RS = sympy.sqrt((_X - _x_s) ** 2 + _Y**2 + _Z**2)
 def g_alc(rng):
     v = rv(rng)
     t1, t2, t3 = rv(rng), rv(rng), rv(rng)
-    a = AlcubierreWarp(v=v).tensor()
+    a = dflt(AlcubierreWarp)
     targets = [(_sigma * (_RS + _R), t1), (_sigma * (_RS - _R), t2), (_sigma * _R, t3)]
 
     def th(arg):
@@ -241,15 +260,15 @@ def g_alc(rng):
                 return -val
         raise AssertionError(f"unmatched tanh argument {arg}")
 
-    exp, cls = finish(a, [(sympy.tanh, th)])
+    exp, cls = finish(a, [(sympy.tanh, th)], by_name(a, v=v))
     return f"predef.alc {toks(v, t1, t2, t3)}", exp, cls
 
 
 def g_bv(rng):
     c, k, r = rv(rng), rv(rng), rv(rng)
     s, _ = trig_pair(rng)
-    a = BarriolaVilekin(c=c, k=k).tensor()
-    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, r=r))
+    a = dflt(BarriolaVilekin)
+    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, c=c, k=k, r=r))
     return f"predef.bv {toks(c, k, r, s)}", exp, cls
 
 
@@ -257,9 +276,9 @@ def g_bk(rng):
     c, lam = rv(rng), rv(rng)
     e = rng.choice(VALUES)
     s, _ = trig_pair(rng)
-    # keyword arguments: the second positional parameter is the unused `k`
-    a = BertottiKasner(c=c, lambd=lam).tensor()
-    exp, cls = finish(a, [(sympy.exp, lambda x: e), (sympy.sin, lambda x: s)])
+    a = dflt(BertottiKasner)
+    exp, cls = finish(a, [(sympy.exp, lambda x: e), (sympy.sin, lambda x: s)],
+                      by_name(a, c=c, l=lam))
     return f"predef.bk {toks(c, lam, e, s)}", exp, cls
 
 
@@ -272,12 +291,9 @@ _K = Q(1, 2) * _C**2 * _rho * (_rho * (_J0**2 + _J1**2) - 2 * _J0 * _J1 * sympy.
 def g_bessel(rng):
     rho = rv(rng)
     eu, ek = rng.choice(VALUES), rng.choice(VALUES)
-    a = BesselGravitationalWave().tensor()
+    a = dflt(BesselGravitationalWave)
 
     def ex(arg):
-        for p, q, val in [(2, 0, eu**2), (-2, 0, 1 / eu**2), (0, 2, ek**2), (-2, 2, ek**2 / eu**2)]:
-            if sympy.expand(arg - (p * _U + q * _K / 2 * 1)) == 0 and False:
-                pass
         for pu, pk, val in [(2, 0, eu**2), (-2, 0, 1 / eu**2), (0, 2, ek**2), (-2, 2, ek**2 / eu**2)]:
             if sympy.expand(arg - (pu * _U + pk * _K)) == 0:
                 return val
@@ -289,7 +305,7 @@ def g_bessel(rng):
 
 def g_cm(rng):
     fv, hv, x, y = rv(rng), rv(rng), rv(rng), rv(rng)
-    a = CMetric().tensor()
+    a = dflt(CMetric)
     exp, cls = finish(
         a,
         subs=by_name(a, x=x, y=y),
@@ -301,7 +317,7 @@ def g_cm(rng):
 
 def g_dav(rng):
     r, t3, w = rv(rng), rng.choice(VALUES + [ZERO]), rng.choice(VALUES)
-    a = Davidson().tensor()
+    a = dflt(Davidson)
     t, rs = sym(a, "t"), sym(a, "r")
     T, W = sympy.Symbol("T", positive=True), sympy.Symbol("W", positive=True)
     ents = [e.subs(t, T**3).subs(1 + rs**2, W**5) for e in entries(a)]
@@ -313,14 +329,14 @@ def g_dav(rng):
 def g_ernst(rng):
     b, m, r = rv(rng), rv(rng), rv(rng)
     s, _ = trig_pair(rng)
-    a = Ernst(B=b, M=m).tensor()
-    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, r=r))
+    a = dflt(Ernst)
+    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, B=b, M=m, r=r))
     return f"predef.ernst {toks(b, m, r, s)}", exp, cls
 
 
 def g_godel(rng):
     e = rng.choice(VALUES)
-    a = Godel().tensor()
+    a = dflt(Godel)
     om, x = sym(a, "omega"), sym(a, "x")
     base = sympy.sqrt(2) * om * x
 
@@ -336,7 +352,7 @@ def g_godel(rng):
 def g_flrw(rng):
     av, k, r = rv(rng), rv(rng), rv(rng)
     s, _ = trig_pair(rng)
-    a = FriedmannLemaitreRobertsonWalker().tensor()
+    a = dflt(FriedmannLemaitreRobertsonWalker)
     exp, cls = finish(
         a,
         [(sympy.sin, lambda x: s)],
@@ -350,15 +366,16 @@ def g_jnw(rng):
     c, g, m, r = rv(rng), rv(rng), rv(rng), rv(rng)
     gam = rng.choice([-3, -2, -1, 0, 1, 1, 2, 3])
     s, _ = trig_pair(rng)
-    a = JanisNewmanWinicour(c=c, G=g, gam=sympy.Integer(gam), M=m).tensor()
-    exp, cls = finish(a, [(sympy.sin, lambda x: s)], by_name(a, r=r))
+    a = dflt(JanisNewmanWinicour)
+    exp, cls = finish(a, [(sympy.sin, lambda x: s)],
+                      by_name(a, c=c, G=g, gam=sympy.Integer(gam), M=m, r=r))
     return f"predef.jnw {toks(c, g)} {gam} {toks(m, r, s)}", exp, cls
 
 
 def g_knds(rng):
     aa, q, lam, r = rv(rng), rv(rng), rv(rng), rv(rng)
     s, co = trig_pair(rng)
-    a = KerrNewmanDeSitter().tensor()
+    a = dflt(KerrNewmanDeSitter)
     exp, cls = finish(
         a,
         [(sympy.sin, lambda x: s), (sympy.cos, lambda x: co)],

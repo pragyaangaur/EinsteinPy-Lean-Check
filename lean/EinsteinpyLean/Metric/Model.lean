@@ -463,4 +463,44 @@ def singularities (name : String) (sys : Sys) (M a Q th : Float) : R (List Sv) :
     pure [.int 0, .int 0, .flt rs, .flt rs]
   else throw .coordinate
 
+/-- Units, as far as `u.quantity_input` cares: the dimension class of a unit name. -/
+inductive UDim where
+  | mass | time | charge | dimless | angle | chargePerMass
+  deriving BEq
+
+def unitDim : String → Option UDim
+  | "kg" | "g" | "Msun" => some .mass
+  | "s" => some .time
+  | "C" | "mC" => some .charge
+  | "one" | "percent" => some .dimless
+  | "rad" => some .angle
+  | "Ckg" | "mCkg" => some .chargePerMass
+  | _ => none
+
+/-- `u.quantity_input` accepts a plain number when the target unit is dimensionless, and raises `TypeError`
+otherwise. -/
+def checkSpec (s : Option UDim × Float) (want : UDim) : R Float :=
+  match s.1 with
+  | none => if want == .dimless then pure s.2 else throw .type
+  | some d => if d == want then pure s.2 else throw .units
+
+/-- The constructors (schwarzschild.py:22-33, kerr.py:21-44, kerrnewman.py:36-69): `u.quantity_input` checks the units
+of `M`, `a`, `Q`, `q` in signature order, and `__init__` stores `sch_rad = schwarzschild_radius(M)` from the raw
+`.value` of the mass. The decorator checks the unit and does not convert it. -/
+def ctorRad (cls : Cls) (ms as qs qq : Option UDim × Float) : R Float := do
+  let M ← checkSpec ms .mass
+  match cls with
+  | .schw => pure (schRad M)
+  | .kerr => do let _ ← checkSpec as .dimless; pure (schRad M)
+  | .kn => do
+      let _ ← checkSpec as .dimless
+      let _ ← checkSpec qs .charge
+      let _ ← checkSpec qq .chargePerMass
+      pure (schRad M)
+
+/-- base_metric.py:303-310 and 311-315: the two `CoordinateError` messages of `singularities`. The source writes the
+sentence as two adjacent string literals, with no space between them. -/
+def singKerrMsg : String := "Singularities for Kerr solutions are only available in" ++ "Boyer-Lindquist Coordinates."
+def singSchwMsg : String := "Singularities for Schwarzschild Metric are only available in" ++ "Spherical Polar Coordinates."
+
 end EinsteinpyLean.Metric

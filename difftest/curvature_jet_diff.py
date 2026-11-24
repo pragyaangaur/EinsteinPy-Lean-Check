@@ -89,7 +89,7 @@ def generic_metric(rng, d):
 
 def pick_dim(rng):
     r = rng.random()
-    return 1 if r < 0.04 else 2 if r < 0.48 else 3 if r < 0.97 else 4
+    return 1 if r < 0.04 else 2 if r < 0.48 else 3 if r < 0.985 else 4
 
 
 def gen_case(rng):

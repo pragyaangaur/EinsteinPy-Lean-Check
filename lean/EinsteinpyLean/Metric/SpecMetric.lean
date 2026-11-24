@@ -1,5 +1,6 @@
 import Mathlib.Tactic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Physlib.Relativity.MinkowskiMatrix
 
@@ -163,5 +164,44 @@ theorem schwarzschild_flat_point_is_eta (μ : Fin 1 ⊕ Fin 3) :
   · fin_cases i
     simp [schwTT]
   · fin_cases i <;> simp [schwRR, schwThTh, schwPP]
+
+/-! ## The `r` derivative of `g_{phi phi}` in Kerr -/
+
+/-- kerr.py:158-159, `tmp = r_s * (sg - r * dsdr) / sg**2 = r_s d(r / sigma) / dr`. -/
+noncomputable def kerrTmp (rs al r th : ℝ) : ℝ := rs * (sig r th al - r * (2 * r)) / sig r th al ^ 2
+
+/-- What kerr.py:172-174 stores in `dgdx[1, 3, 3]`: `(-2 r + (alpha sin th)^2 tmp) sin^2 th`. -/
+noncomputable def codeDgPP (rs al r th : ℝ) : ℝ :=
+  (-2 * r + (al * sin th) ^ 2 * kerrTmp rs al r th) * sin th ^ 2
+
+/-- The true derivative of `kerrPP` in `r`: the second term has a minus sign. -/
+theorem kerrPP_hasDerivAt (rs al r th : ℝ) (hs : sig r th al ≠ 0) :
+    HasDerivAt (fun r => kerrPP rs al r th)
+      ((-2 * r - (al * sin th) ^ 2 * kerrTmp rs al r th) * sin th ^ 2) r := by
+  have hr : HasDerivAt (fun r => sig r th al) (2 * r) r := by
+    have := ((hasDerivAt_pow 2 r).add_const ((al * cos th) ^ 2))
+    simpa [sig] using this
+  have h1 := (hasDerivAt_pow 2 r).add_const (al ^ 2)
+  have h2 := ((((hasDerivAt_id r).const_mul rs).mul_const ((al * sin th) ^ 2)).div hr hs)
+  have h3 := ((h1.add h2).mul_const (sin th ^ 2)).neg
+  refine h3.congr_deriv ?_
+  simp only [kerrTmp, id]
+  field_simp
+  ring
+
+/-- PROP metric.kerr.dg_dx.phiphi_is_derivative : REFUTED
+Source: kerr.py:172-174 `_dg_dx_bl`, `dgdx[1, 3, 3]`, against the definition: it is documented as the derivative of the
+`(3, 3)` component with respect to `r` (kerr.py:136-148). The code has `+ (alpha sin th)^2 tmp` where the derivative of
+`-(r^2 + alpha^2 + r_s r (alpha sin th)^2 / sigma) sin^2 th` has `- (alpha sin th)^2 tmp`. At `rs = 1`, `alpha = 1`, `r = 1`,
+`th = pi / 2` the code gives `-3` and the derivative is `-1`. -/
+theorem kerr_dg_phiphi_not_derivative :
+    ¬ ∀ (rs al r th : ℝ), sig r th al ≠ 0 →
+      HasDerivAt (fun r => kerrPP rs al r th) (codeDgPP rs al r th) r := by
+  intro h
+  have hs : sig 1 (π / 2) 1 ≠ 0 := by simp [sig]
+  have h1 := h 1 1 1 (π / 2) hs
+  have h2 := kerrPP_hasDerivAt 1 1 1 (π / 2) hs
+  have := h1.unique h2
+  norm_num [codeDgPP, kerrTmp, sig] at this
 
 end EinsteinpyLean.Metric.Spec

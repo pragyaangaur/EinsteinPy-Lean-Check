@@ -1,0 +1,11 @@
+id: tensor-product-negative-index
+title: tensor_product with a negative index returns a wrong tensor with the wrong rank instead of contracting or raising
+area: Tensor
+kind: wrong-result
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/tensor.py:97-110
+property: EinsteinpyLean.Tensor.tensorProduct_negative_index_wrong_rank
+summary: >
+  `tensor_product(t1, t2, i, j)` reads `tensor1.config[i]` with Python indexing, so a negative `i` such as `-1` passes the check that the two indices are of different kinds. The axis pair `(i, len(tensor1.config) + j)` then goes to `sympy.tensorcontraction` without normalisation. sympy never maps a negative axis to a positive one: it keeps the axis in the result, reads the summation stride with Python indexing and wraps the flat position modulo the array size. The new config is built with `config[:i] + config[i + 1:]`, which for `i = -1` is `config[:-1] + config`, so it drops nothing. For `v^a = (1, 2)` and `m_a^b = δ`, `tensor_product(v, m, 0, 0)` gives `u [1, 2]` but `tensor_product(v, m, -1, 0)` gives `uu [[2, 2], [4, 1]]`, a rank 2 tensor with meaningless values, and no error. When the rank and the config length disagree the constructor raises a confusing "invalid shape" ValueError instead. The Lean model mirrors sympy's `_util_contraction_diagonal` exactly and agrees with einsteinpy on 150,000 random cases.
+upstream: NEW, searched einsteinpy issues and PRs for "tensor_product" and "negative index" on 24 Nov 2026, nothing found

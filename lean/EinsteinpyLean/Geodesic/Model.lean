@@ -377,7 +377,7 @@ def ordSelf (c : Cfg) (n : Nat) : Vec → Vec → Vec → Vec → Float → Exce
 
 /-- What `_ord_{2k}` should be if each level read `_Z` of its own order `2k`. -/
 def ordFixed (c : Cfg) (n : Nat) : Vec → Vec → Vec → Vec → Float → Except Exc (Array Vec) :=
-  ordN c (fun k => 2 * (Float.ofNat k) + 2) n
+  ordN c (fun k => if k == 1 then 4.0 else if k == 2 then 6.0 else 8.0) n
 
 /-- fantasy.py:123-129 `ORDERS`: `order in ORDERS` for a number. -/
 def orderIndex (order : Float) : Option Nat :=

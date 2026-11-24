@@ -1,0 +1,11 @@
+id: helpers-transformation-matrix-reciprocal
+title: TransformationMatrix.from_new2old and inv() take element-wise reciprocals instead of inverting the Jacobian
+area: Helpers
+kind: wrong-result
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/symbolic/helpers.py:155-157 and helpers.py:186-187
+property: EinsteinpyLean.Helpers.Spec.recip_not_inverse
+summary: >
+  `TransformationMatrix` is the public class "for defining transformation matrix for basis change of vectors and tensors". `from_new2old` differentiates the old coordinates by the new ones and then applies `np.reciprocal`, which inverts each entry on its own. `inv()`, documented as "Returns inverse of the transformation matrix", applies `np.reciprocal` again, so it returns the derivative array itself. Neither is ever a matrix inverse. For `x = 2u + v, y = u + v` the Jacobian is `[[2, 1], [1, 1]]` with inverse `[[1, -1], [-1, 2]]`, while `from_new2old` gives `[[1/2, 1], [1, 1]]`. For the identity map every off-diagonal entry becomes `zoo`. For polar coordinates it gives `1/cos(theta)` where the inverse Jacobian has `cos(theta)`, and `tests/test_symbolic/test_helpers.py:36` asserts exactly that wrong value, so the test suite locks the bug in. The class came in with commit 70877c5 (February 2020). Mathlib proves the element-wise reciprocal is not the inverse even for a unimodular 2 by 2 Jacobian with no zero entries.
+upstream: NEW, searched einsteinpy issues and PRs for "TransformationMatrix", "reciprocal", "from_new2old" and "transformation matrix" on 24 Nov 2026. The class was added for #374 (PR #431) and nothing reports the inversion

@@ -66,7 +66,8 @@ def mPerC : Float := Float.sqrt (gG * cc) / cSq
 def kgPerC : Float := Float.sqrt (cc / gG)
 
 /-- `x ** e` with a plain Python float `x` (flag `py`) or a NumPy scalar. Python raises `OverflowError` when a
-finite float overflows. -/
+finite float overflows. In `sigma` and `delta` only the arguments `r` and `Q` can be Python floats: every other
+quantity involves `_G`, `_c` or `_Cc`, which are `numpy.float64` (constant.py gives `numpy` scalars). -/
 def pw (py : Bool) (x e : Float) : R Float :=
   let y := Float.pow x e
   if py && x.isFinite && y.isInf then throw .overflow else pure y
@@ -97,7 +98,7 @@ def delta (py : Bool) (r M a Q : Float) : R Float := do
   let q2 ← pw py Q 2.0
   let rQ2 := q2 * gG * cc / cQ4
   let r2 ← pw py r 2.0
-  let a2 ← pw py al 2.0
+  let a2 := p2 al -- `alpha` is a NumPy scalar even for Python inputs, because `_G` is a `numpy.float64`
   pure (r2 - rs * r + a2 + rQ2)
 
 /-- base_metric.py:157-190 `rho`: `np.sqrt(sigma)`. -/

@@ -1,0 +1,11 @@
+id: coordinates-partial-velocities-dropped
+title: velocities that are given next to a missing one are dropped without a word
+area: Coordinates
+kind: inconsistent
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/coordinates/conversion.py:35-37 (and the same lines in the two other classes)
+property: EinsteinpyLean.Coordinates.partial_velocities_dropped
+summary: >
+  The constructors document `v_x`, `v_y` and `v_z` as optional one by one, but `_velocities_provided` is true only when all three are given. With `v_x` and `v_z` set and `v_y = None` the object answers `values()` and every conversion with the 4-tuple, so the two velocities vanish and no error or warning says so. A caller that forgets one component gets a position-only answer instead of an error.
+upstream: NEW, searched einsteinpy issues and pull requests for "velocities_provided", "CartesianConversion" and "coordinates conversion" on 24 Nov 2026. Nothing reports it.

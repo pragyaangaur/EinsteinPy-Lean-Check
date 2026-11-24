@@ -120,6 +120,10 @@ def hFromMetric : Handler
       | some j => showArr (do
           let cfg := parseConfig c
           -- the chain for `chr` stops at the Christoffel symbols
+          -- schouten.py:65 and weyl.py:65-101 look at the dimension before anything else
+          if op == "sch" && d < 3 then throw .dimTooSmall
+          if op == "weyl" && d < 3 then throw .dimTooSmall
+          if op == "weyl" && d == 3 then return ofFn [3, 3, 3, 3] fun _ => 0
           let lj ← lowerJet cfg j
           if op == "chr" then return (← christoffelOf lj)
           let (p, m) ← fromMetric cfg j

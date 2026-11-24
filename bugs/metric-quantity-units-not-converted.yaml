@@ -1,0 +1,11 @@
+id: metric-quantity-units-not-converted
+title: Metric classes check the unit of the mass but never convert it, so solar masses and grams are read as kilograms
+area: Metric
+kind: wrong-result
+severity: medium
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/metric/base_metric.py:48 and 101-103 (and units.py:8-26 `primitive`)
+property: EinsteinpyLean.Metric.solar_mass_quantity_has_radius_of_one_kilogram
+summary: >
+  `@u.quantity_input(M=u.kg, a=u.one, Q=u.C)` accepts any quantity whose unit is convertible to kilograms but does not convert the value. `schwarzschild_radius` and every other formula then read `M.value` as if it were in kilograms. `Schwarzschild(coords, 1 * u.Msun).sch_rad` is `1.485e-27` m, the radius of one kilogram, and not `2953.25` m; a mass of `1000 * u.g` gives the radius of 1000 kg. The same holds for `a` in percent (`50 * u.percent` is read as 50, and `alpha` then raises `ValueError`) and for `Q` in millicoulombs. A user who writes the mass in solar masses, which is the natural unit and the one `bodies.py` offers, gets a silently wrong metric.
+upstream: NEW, searched einsteinpy issues and PRs for "quantity_input", "unit conversion", "Quantity", "primitive units" and "Msun" on 24 Nov 2026. No report. The Utils area records the same behaviour of `primitive` as a property but no bug. Main is still at 63e1c54

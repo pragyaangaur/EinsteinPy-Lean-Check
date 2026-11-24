@@ -1,0 +1,14 @@
+name = "EinsteinpyLean"
+defaultTargets = ["EinsteinpyLean", "epdiff"]
+
+[[require]]
+name = "physlib"
+git = "https://github.com/leanprover-community/physlib"
+rev = "cbd02238fd1414edd9fa34871acc2a0fcdc20c21"
+
+[[lean_lib]]
+name = "EinsteinpyLean"
+
+[[lean_exe]]
+name = "epdiff"
+root = "Main"

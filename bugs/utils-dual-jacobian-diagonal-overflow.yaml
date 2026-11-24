@@ -1,0 +1,11 @@
+id: utils-dual-jacobian-diagonal-overflow
+title: _jacobian_g returns inf on the diagonal when a derivative exceeds half the float range
+area: Utils
+kind: wrong-result
+severity: low
+einsteinpy_commit: 63e1c54537a385c9f56d7d4075b0261ddaa96069
+source: src/einsteinpy/utils/dual.py:238
+property: EinsteinpyLean.Utils.jacobian_diagonal_not_exact
+summary: >
+  `_jacobian_g` fills the upper triangle and symmetrises with `J + J.T - np.diag(np.diag(J))`. A diagonal entry `x` is computed as `(x + x) - x`, which is `inf` when `2 x` overflows. For a metric function whose derivative is `1e308` the Jacobian diagonal is `inf`. Symmetrising with `np.triu(J) + np.triu(J, 1).T`, or `np.where`, would be exact. The case is rare, and it shows only at huge derivatives.
+upstream: NEW, searched einsteinpy issues and PRs for "DualNumber", "dual number", "_jacobian_g", "dual.py" and "automatic differentiation" on 24 Nov 2026. Nothing reports it, and dual.py is unchanged on main since the Python 3.15 CI commit

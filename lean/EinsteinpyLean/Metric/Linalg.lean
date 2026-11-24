@@ -8,8 +8,10 @@ hands both to OpenBLAS on this machine, and the order in which BLAS adds the pro
 The orders below were found by comparing with NumPy on thousands of matrices and are stated here so a reader
 can see what the difftests rely on:
 
-* `matmul4` (`dgemm`): each entry is `fma(a2, b2, a0 * b0) + fma(a3, b3, a1 * b1)`.
-* `matvec4` (`dgemv`): each entry is `(a0 * v0 + a2 * v2) + (a1 * v1 + a3 * v3)`, no fused multiply-add.
+* `matmul4` (`dgemm`): each entry is `fma(a2, b2, a0 * b0 + 0) + fma(a3, b3, a1 * b1 + 0)`. The accumulators
+  start at `+0`, so a product `-0` becomes `+0`.
+* `matvec4` (`dgemv`): each entry is `(a0 * v0 + a2 * v2) + (a1 * v1 + a3 * v3)`, no fused multiply-add, and a product `-0`
+  stays `-0`.
 * `inv4` (`dgesv` against the identity): the recursive LU of `dgetrf2` with partial pivoting and row
   swaps, multipliers found with the reciprocal of the pivot, then forward substitution without fused
   multiply-add and back substitution with the reciprocal of the diagonal and a fused multiply-add.
@@ -41,8 +43,8 @@ def matmul4 (a b : Arr) : Arr := Id.run do
   let mut c := zeros 16
   for i in [0:4] do
     for j in [0:4] do
-      let s0 := Float.fma (a.at2 i 2) (b.at2 2 j) (a.at2 i 0 * b.at2 0 j)
-      let s1 := Float.fma (a.at2 i 3) (b.at2 3 j) (a.at2 i 1 * b.at2 1 j)
+      let s0 := Float.fma (a.at2 i 2) (b.at2 2 j) ((a.at2 i 0 * b.at2 0 j) + 0.0)
+      let s1 := Float.fma (a.at2 i 3) (b.at2 3 j) ((a.at2 i 1 * b.at2 1 j) + 0.0)
       c := c.set2 i j (s0 + s1)
   return c
 
